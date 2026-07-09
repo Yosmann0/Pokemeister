@@ -1,0 +1,99 @@
+{% extends "base.html" %}
+
+{% block content %}
+
+<form action="/result" method="GET" id="selectionForm">
+
+    <div class="field" id="generation-field">
+        <label>Select Pokémon Generation:</label>
+        <select name="generation" id="generation">
+            <option value="" selected disabled>-- choose --</option>
+            {% for generation in generations %}
+                <option value="{{ generation }}">{{ generation }}</option>
+            {% endfor %}
+        </select>
+    </div>
+
+    <div class="field" id="location-field" style="display:none;">
+        <label>Select Location:</label>
+        <select name="location" id="location">
+            <option value="" selected disabled>-- choose --</option>
+        </select>
+    </div>
+
+    <div class="field" id="area-field" style="display:none;">
+        <label>Select Area:</label>
+        <select name="area" id="area">
+            <option value="" selected disabled>-- choose --</option>
+        </select>
+    </div>
+
+    <button type="submit" id="submit-btn" style="display:none;">
+        Select
+    </button>
+
+</form>
+
+<script>
+    const generationSelect = document.getElementById('generation');
+    const locationField = document.getElementById('location-field');
+    const locationSelect = document.getElementById('location');
+    const areaField = document.getElementById('area-field');
+    const areaSelect = document.getElementById('area');
+    const submitBtn = document.getElementById('submit-btn');
+
+    // fill a <select> with the list of options of the api
+    function fillSelect(selectElement, options) {
+        selectElement.innerHTML = '<option value="" selected disabled>-- choose --</option>';
+
+        options.forEach((option) => {
+            const optionElement = document.createElement('option');
+            optionElement.value = option;
+            optionElement.textContent = option;
+            selectElement.appendChild(optionElement);
+        });
+    }
+
+    generationSelect.addEventListener('change', async () => {
+        const generation = generationSelect.value;
+        if (!generation) {
+            return;
+        }
+
+        const response = await fetch(`/api/locations?generation=${generation}`);
+        const locations = await response.json();
+
+        fillSelect(locationSelect, locations);
+        locationField.style.display = 'block';
+
+        // hide area and submit button until a generation is selected
+        // explicitly hide them in case the user changes the generation after selecting a location
+        areaField.style.display = 'none';
+        submitBtn.style.display = 'none';
+    });
+
+    locationSelect.addEventListener('change', async () => {
+        const location = locationSelect.value;
+        if (!location) {
+            return;
+        }
+
+        const response = await fetch(`/api/areas?location=${encodeURIComponent(location)}`);
+        const areas = await response.json();
+
+        fillSelect(areaSelect, areas);
+        areaField.style.display = 'block';
+
+        // hide submit button until a location is selected 
+        // explicitly hide them in case the user changes the location after selecting a location
+        submitBtn.style.display = 'none';
+    });
+
+    areaSelect.addEventListener('change', () => {
+        if (areaSelect.value) {
+            submitBtn.style.display = 'inline-block';
+        }
+    });
+</script>
+
+{% endblock %}
