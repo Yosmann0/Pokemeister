@@ -28,8 +28,13 @@
         </select>
     </div>
 
+    <div class="field" id="pokemon-area-field" style="display:none;">
+        <label>Available Pokémon in this area:</label>
+        <ul id="pokemon-list"></ul>
+    </div>
+
     <button type="submit" id="submit-btn" style="display:none;">
-        Select
+        Get Random Pokémon
     </button>
 
 </form>
@@ -40,17 +45,30 @@
     const locationSelect = document.getElementById('location');
     const areaField = document.getElementById('area-field');
     const areaSelect = document.getElementById('area');
+    const pokemonAreaField = document.getElementById('pokemon-area-field');
+    const pokemonList = document.getElementById('pokemon-list');
     const submitBtn = document.getElementById('submit-btn');
 
-    // fill a <select> with the list of options of the api
+    // fill a <select> with the list of options from the api
     function fillSelect(selectElement, options) {
         selectElement.innerHTML = '<option value="" selected disabled>-- choose --</option>';
 
         options.forEach((option) => {
             const optionElement = document.createElement('option');
-            optionElement.value = option;
-            optionElement.textContent = option;
+            optionElement.value = option.value;
+            optionElement.textContent = option.key;
             selectElement.appendChild(optionElement);
+        });
+    }
+
+    // fill a plain list (e.g. <ul>) with just the names, no selection involved
+    function fillList(listElement, options) {
+        listElement.innerHTML = '';
+
+        options.forEach((option) => {
+            const itemElement = document.createElement('li');
+            itemElement.textContent = option.key;
+            listElement.appendChild(itemElement);
         });
     }
 
@@ -66,9 +84,8 @@
         fillSelect(locationSelect, locations);
         locationField.style.display = 'block';
 
-        // hide area and submit button until a generation is selected
-        // explicitly hide them in case the user changes the generation after selecting a location
         areaField.style.display = 'none';
+        pokemonAreaField.style.display = 'none';
         submitBtn.style.display = 'none';
     });
 
@@ -84,15 +101,25 @@
         fillSelect(areaSelect, areas);
         areaField.style.display = 'block';
 
-        // hide submit button until a location is selected 
-        // explicitly hide them in case the user changes the location after selecting a location
+        pokemonAreaField.style.display = 'none';
         submitBtn.style.display = 'none';
     });
 
-    areaSelect.addEventListener('change', () => {
-        if (areaSelect.value) {
-            submitBtn.style.display = 'inline-block';
+    areaSelect.addEventListener('change', async () => {
+        const area = areaSelect.value;
+        if (!area) {
+            return;
         }
+
+        const response = await fetch(`/api/encounters?area=${encodeURIComponent(area)}`);
+        const encounters = await response.json();
+
+        fillList(pokemonList, encounters);
+        pokemonAreaField.style.display = 'block';
+
+        // area is now the last real selection, so the submit button
+        // becomes available as soon as it's chosen
+        submitBtn.style.display = 'inline-block';
     });
 </script>
 
