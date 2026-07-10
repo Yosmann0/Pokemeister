@@ -67,6 +67,16 @@ def get_pokemon_info_by_name(pokemon_name:str):
 
     return pokemon_dict
 
+def get_full_version_list():
+    version_list = []
+    for i in range(1, 25):
+        requests_version = requests.get(f"{URL_BASE}version-group/{i}/")
+        data_version = requests_version.json()
+        version_list.append({'name': data_version['name'], 'id': data_version['id']})
+    return version_list
+
+
+
 if __name__ == '__main__':
     generation = [1,2,3,4,5,6,7,8]
     
@@ -130,3 +140,5 @@ if __name__ == '__main__':
     pokemon_dict['sprite'] = f"{pokemon_json_data['sprites']['front_default']}"
     
     print(pokemon_dict, len(pokemon_dict))
+    version_groups = get_full_version_list()
+    print(version_groups)
