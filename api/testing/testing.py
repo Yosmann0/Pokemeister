@@ -4,7 +4,7 @@ import random
 
 generation = [1,2,3,4,5,6,7,8]
 
-url = f"https://pokeapi.co/api/v2/generation/{generation[7]}/"
+url = f"https://pokeapi.co/api/v2/generation/{generation[0]}/"
 
 response = requests.get(url)
 
@@ -53,6 +53,7 @@ pokemon_dict:dict = dict(name = f"{pokemon_json_data['name']}", stats = {"HP": p
 
 pokemon_dict["pokewiki_url"] = f"https://www.pokewiki.de/{pokemon_dict['name']}"
 pokemon_dict['stats']["BST"] = pokemon_dict['stats']['HP'] + pokemon_dict['stats']['ATK'] + pokemon_dict['stats']['DEF'] + pokemon_dict['stats']['SPEATK'] + pokemon_dict['stats']['SPEDEF'] + pokemon_dict['stats']['SPE']
+pokemon_dict['typing'] = {i['type']['name'] for i in pokemon_json_data['types']}
 
 print(pokemon_dict, len(pokemon_dict))
 
@@ -102,7 +103,7 @@ def get_pokemon_info_by_url(pokemon_name_url:dict):
     pokemon_json_data = pokemon_url_data.json()
     
     pokemon_dict:dict = dict(name = f"{pokemon_json_data['name']}", stats = {"HP": pokemon_json_data['stats'][0]['base_stat'], "ATK": pokemon_json_data['stats'][1]['base_stat'], "DEF": pokemon_json_data['stats'][2]['base_stat'], "SPEATK": pokemon_json_data['stats'][3]['base_stat'], "SPEDEF": pokemon_json_data['stats'][4]['base_stat'], "SPE": pokemon_json_data['stats'][5]['base_stat']})
-    
+    pokemon_dict['typing'] = {i['type']['name'] for i in pokemon_json_data['types']}
     pokemon_dict["pokewiki_url"] = f"https://www.pokewiki.de/{pokemon_dict['name']}"
     pokemon_dict['stats']["BST"] = pokemon_dict['stats']['HP'] + pokemon_dict['stats']['ATK'] + pokemon_dict['stats']['DEF'] + pokemon_dict['stats']['SPEATK'] + pokemon_dict['stats']['SPEDEF'] + pokemon_dict['stats']['SPE']
     
