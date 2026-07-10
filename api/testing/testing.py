@@ -20,6 +20,7 @@ def get_locations_for_generation(generation:int):
     data_locations = data_gen['locations']
     list_locations = [key for key in data_locations]
     list_locations = {item["name"]: get_trailing_number(item["url"]) for item in data_locations}
+    list_locations = [{"name": name, "id": number} for name, number in list_locations.items()]
     
     return list_locations
 
@@ -31,7 +32,8 @@ def get_areas_for_location(location_num:int):
     data_area = data_loc['areas']
     list_area = [key for key in data_area]
     list_area = {item["name"]: get_trailing_number(item["url"]) for item in data_area}
-    
+    list_area = [{"name": name, "id": number} for name, number in list_area.items()]
+
     return list_area
 
 def get_pokemon_for_area(area_num:int):
@@ -44,7 +46,8 @@ def get_pokemon_for_area(area_num:int):
     list_enc = [key for key in data_enc]
     list_enc = [item['pokemon'] for item in list_enc]
     pokemon_list = {item["name"]: get_trailing_number(item["url"]) for item in list_enc}
-    
+    pokemon_list= [{"name": name, "id": number} for name, number in pokemon_list.items()]
+
     return pokemon_list
 
 def get_pokemon_info_by_name(pokemon_name:str):
@@ -82,6 +85,7 @@ if __name__ == '__main__':
     data_locations = data['locations']
     list_locations = [key for key in data_locations]
     list_locations = {item["name"]: get_trailing_number(item["url"]) for item in data_locations}
+    list_locations = [{"name": name, "id": number} for name, number in list_locations.items()]
     print(list_locations)
     
     print(data['locations'][34]['name'], data['locations'][34]['url'])
@@ -93,6 +97,7 @@ if __name__ == '__main__':
     data_locations = data['areas']
     list_locations = [key for key in data_locations]
     list_locations = {item["name"]: get_trailing_number(item["url"]) for item in data_locations}
+    list_locations = [{"name": name, "id": number} for name, number in list_locations.items()]
     print(list_locations)
     
     print(data['areas'][0]['name'], data['areas'][0]['url'])
@@ -105,6 +110,7 @@ if __name__ == '__main__':
     list_locations = [key for key in data_locations]
     list_locations = [item['pokemon'] for item in list_locations]
     list_locations = {item["name"]: get_trailing_number(item["url"]) for item in list_locations}
+    list_locations = [{"name": name, "id": number} for name, number in list_locations.items()]
     print(list_locations)
     
     test = data['pokemon_encounters'][random.randint(0, (len(list_locations) - 1))]['pokemon']        #list length is 1 higher than index
