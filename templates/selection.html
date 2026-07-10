@@ -274,14 +274,20 @@
     // can pick a random one without asking the server again
     let currentEncounters = [];
 
+    function formatLabel(text) {
+        return text
+            .replace(/-/g, ' ')
+            .replace(/\b\w/g, (char) => char.toUpperCase());
+    }
+
     // fill a <select> with the list of options from the api
     function fillSelect(selectElement, options) {
         selectElement.innerHTML = '<option value="" selected disabled>-- choose --</option>';
 
         options.forEach((option) => {
             const optionElement = document.createElement('option');
-            optionElement.value = option.value;
-            optionElement.textContent = option.key;
+            optionElement.value = option.id;
+            optionElement.textContent = formatLabel(option.name);
             selectElement.appendChild(optionElement);
         });
     }
@@ -292,7 +298,7 @@
 
         options.forEach((option) => {
             const itemElement = document.createElement('li');
-            itemElement.textContent = option.key;
+            itemElement.textContent = formatLabel(option.name);
             listElement.appendChild(itemElement);
         });
     }
@@ -380,10 +386,10 @@
         const random = currentEncounters[Math.floor(Math.random() * currentEncounters.length)];
 
         const params = new URLSearchParams({
-            generation_number: generationSelect.value,
-            location_number: locationSelect.value,
-            area_number: areaSelect.value,
-            pokemon_name: random.value
+            generation: generationSelect.selectedOptions[0].text,
+            location: locationSelect.selectedOptions[0].text,
+            area: areaSelect.selectedOptions[0].text,
+            pokemon_name: random.name
         });
 
         window.location.href = `/result?${params.toString()}`;

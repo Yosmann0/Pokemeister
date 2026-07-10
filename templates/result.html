@@ -300,10 +300,10 @@
 <div class="page-wrap">
     <h1 class="page-title">Result</h1>
 
-    <div class="selection-summary">
-        <span>Generation: <strong>{{ generation }}</strong></span>
-        <span>Location: <strong>{{ location }}</strong></span>
-        <span>Area: <strong>{{ area }}</strong></span>
+<div class="selection-summary">
+        <span>Generation: <strong>{{ generation | replace('-', ' ') | title }}</strong></span>
+        <span>Location: <strong>{{ location | replace('-', ' ') | title }}</strong></span>
+        <span>Area: <strong>{{ area | replace('-', ' ') | title }}</strong></span>
     </div>
 
     {% if pokemon_data %}
