@@ -51,8 +51,8 @@ list_locations = [item['pokemon'] for item in list_locations]
 list_locations = {item["name"]: item["url"] for item in list_locations}
 print(list_locations)
 
-
-print(data['pokemon_encounters'][random.randint(0, len(list_locations))]['pokemon']['name'])
+test = [data['pokemon_encounters'][random.randint(0, (len(list_locations) - 1))]['pokemon']]        #list length is 1 higher than index
+print(test)
 
 
 def get_locations_for_generation(generation:int):
@@ -86,5 +86,9 @@ def get_areas_for_location(location_url:str):
     list_locations = {item["name"]: item["url"] for item in data_locations}
     print(list_locations)
 
-def get_pokemon_info_by_url(pokemon_url:str):
+def get_pokemon_info_by_url(pokemon_name_url:str):
+    
+    
+    
+    
     return("to be continued")
