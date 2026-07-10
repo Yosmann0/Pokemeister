@@ -2,52 +2,277 @@
 
 {% block content %}
 
-<form action="/result" method="GET" id="selectionForm">
+<style>
+    .page-wrap {
+        max-width: 640px;
+        margin: 0 auto;
+        padding: 24px 16px 60px;
+        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+        color: #2b2b33;
+    }
 
-    <div class="field" id="generation-field">
-        <label>Select Pokémon Generation:</label>
-        <select name="generation" id="generation">
-            <option value="" selected disabled>-- choose --</option>
-            {% for generation in generations %}
-                <option value="{{ generation }}">{{ generation }}</option>
-            {% endfor %}
-        </select>
+    .page-title {
+        text-align: center;
+        font-size: 1.8rem;
+        letter-spacing: 0.5px;
+        margin-bottom: 4px;
+    }
+
+    .page-subtitle {
+        text-align: center;
+        color: #7a7f92;
+        font-size: 0.9rem;
+        margin-bottom: 32px;
+    }
+
+    .steps {
+        display: flex;
+        flex-direction: column;
+        gap: 16px;
+    }
+
+    .field {
+        background: #ffffff;
+        border: 1px solid #ececf4;
+        border-radius: 16px;
+        padding: 18px 20px;
+        box-shadow: 0 4px 14px rgba(20, 20, 40, 0.05);
+        opacity: 0;
+        transform: translateY(8px);
+        animation: field-in 0.35s ease forwards;
+    }
+
+    @keyframes field-in {
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+
+    .field-header {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        margin-bottom: 12px;
+    }
+
+    .step-badge {
+        flex: none;
+        width: 26px;
+        height: 26px;
+        border-radius: 50%;
+        background: linear-gradient(135deg, #5a6bc4, #8fa6d6);
+        color: #fff;
+        font-size: 0.8rem;
+        font-weight: 700;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .field label {
+        font-size: 0.85rem;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        color: #4a4e60;
+    }
+
+    .field select {
+        width: 100%;
+        appearance: none;
+        -webkit-appearance: none;
+        background: #f7f8fc url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='14' height='9' viewBox='0 0 14 9'><path d='M1 1l6 6 6-6' fill='none' stroke='%235a6bc4' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'/></svg>") no-repeat right 16px center;
+        border: 1px solid #e1e3ea;
+        border-radius: 10px;
+        padding: 12px 40px 12px 14px;
+        font-size: 0.95rem;
+        color: #2b2b33;
+        cursor: pointer;
+        transition: border-color 0.15s ease, box-shadow 0.15s ease;
+    }
+
+    .field select:focus {
+        outline: none;
+        border-color: #5a6bc4;
+        box-shadow: 0 0 0 3px rgba(90, 107, 196, 0.15);
+    }
+
+    .field select:disabled {
+        cursor: not-allowed;
+        opacity: 0.6;
+    }
+
+    .spinner {
+        display: none;
+        width: 16px;
+        height: 16px;
+        border: 2px solid #dfe2f0;
+        border-top-color: #5a6bc4;
+        border-radius: 50%;
+        margin-left: auto;
+        animation: spin 0.7s linear infinite;
+    }
+
+    .spinner.active {
+        display: block;
+    }
+
+    @keyframes spin {
+        to { transform: rotate(360deg); }
+    }
+
+    #pokemon-list {
+        list-style: none;
+        margin: 0;
+        padding: 0;
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px;
+    }
+
+    #pokemon-list li {
+        background: #eef0fb;
+        color: #3d4270;
+        padding: 6px 14px 6px 10px;
+        border-radius: 999px;
+        font-size: 0.85rem;
+        text-transform: capitalize;
+        display: flex;
+        align-items: center;
+        gap: 6px;
+    }
+
+    #pokemon-list li::before {
+        content: "";
+        width: 8px;
+        height: 8px;
+        border-radius: 50%;
+        background: linear-gradient(135deg, #5a6bc4, #8fa6d6);
+        flex: none;
+    }
+
+    #pokemon-list:empty::after {
+        content: "No Pokémon found in this area.";
+        color: #9297a8;
+        font-size: 0.85rem;
+    }
+
+    .submit-wrap {
+        display: flex;
+        justify-content: center;
+        margin-top: 8px;
+        opacity: 0;
+        transform: translateY(8px);
+        animation: field-in 0.35s ease forwards;
+    }
+
+    #submit-btn {
+        appearance: none;
+        border: none;
+        cursor: pointer;
+        background: linear-gradient(135deg, #5a6bc4, #8fa6d6);
+        color: #fff;
+        font-size: 0.95rem;
+        font-weight: 700;
+        letter-spacing: 0.3px;
+        padding: 14px 32px;
+        border-radius: 999px;
+        box-shadow: 0 10px 24px rgba(90, 107, 196, 0.3);
+        transition: transform 0.15s ease, box-shadow 0.15s ease;
+    }
+
+    #submit-btn:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 14px 28px rgba(90, 107, 196, 0.38);
+    }
+
+    #submit-btn:active {
+        transform: translateY(0);
+    }
+
+    #submit-btn:disabled {
+        opacity: 0.6;
+        cursor: not-allowed;
+        transform: none;
+        box-shadow: none;
+    }
+</style>
+
+<div class="page-wrap">
+    <h1 class="page-title">Find a Pokémon</h1>
+    <p class="page-subtitle">Narrow it down step by step, then let chance pick your Pokémon.</p>
+
+    <div class="steps">
+        <div class="field" id="generation-field">
+            <div class="field-header">
+                <span class="step-badge">1</span>
+                <label for="generation">Select Pokémon Generation</label>
+            </div>
+            <select name="generation" id="generation">
+                <option value="" selected disabled>-- choose --</option>
+                {% for generation in generations %}
+                    <option value="{{ generation }}">{{ generation }}</option>
+                {% endfor %}
+            </select>
+        </div>
+
+        <div class="field" id="location-field" style="display:none;">
+            <div class="field-header">
+                <span class="step-badge">2</span>
+                <label for="location">Select Location</label>
+                <span class="spinner" id="location-spinner"></span>
+            </div>
+            <select name="location" id="location">
+                <option value="" selected disabled>-- choose --</option>
+            </select>
+        </div>
+
+        <div class="field" id="area-field" style="display:none;">
+            <div class="field-header">
+                <span class="step-badge">3</span>
+                <label for="area">Select Area</label>
+                <span class="spinner" id="area-spinner"></span>
+            </div>
+            <select name="area" id="area">
+                <option value="" selected disabled>-- choose --</option>
+            </select>
+        </div>
+
+        <div class="field" id="pokemon-area-field" style="display:none;">
+            <div class="field-header">
+                <span class="step-badge">4</span>
+                <label>Available Pokémon in this Area</label>
+                <span class="spinner" id="pokemon-spinner"></span>
+            </div>
+            <ul id="pokemon-list"></ul>
+        </div>
+
+        <div class="submit-wrap" id="submit-wrap" style="display:none;">
+            <button type="button" id="submit-btn" style="display:none;">
+                Get Random Pokémon
+            </button>
+        </div>
     </div>
-
-    <div class="field" id="location-field" style="display:none;">
-        <label>Select Location:</label>
-        <select name="location" id="location">
-            <option value="" selected disabled>-- choose --</option>
-        </select>
-    </div>
-
-    <div class="field" id="area-field" style="display:none;">
-        <label>Select Area:</label>
-        <select name="area" id="area">
-            <option value="" selected disabled>-- choose --</option>
-        </select>
-    </div>
-
-    <div class="field" id="pokemon-area-field" style="display:none;">
-        <label>Available Pokémon in this area:</label>
-        <ul id="pokemon-list"></ul>
-    </div>
-
-    <button type="submit" id="submit-btn" style="display:none;">
-        Get Random Pokémon
-    </button>
-
-</form>
+</div>
 
 <script>
     const generationSelect = document.getElementById('generation');
     const locationField = document.getElementById('location-field');
     const locationSelect = document.getElementById('location');
+    const locationSpinner = document.getElementById('location-spinner');
     const areaField = document.getElementById('area-field');
     const areaSelect = document.getElementById('area');
+    const areaSpinner = document.getElementById('area-spinner');
     const pokemonAreaField = document.getElementById('pokemon-area-field');
     const pokemonList = document.getElementById('pokemon-list');
+    const pokemonSpinner = document.getElementById('pokemon-spinner');
+    const submitWrap = document.getElementById('submit-wrap');
     const submitBtn = document.getElementById('submit-btn');
+
+    // keep the last fetched encounter list around so the click handler
+    // can pick a random one without asking the server again
+    let currentEncounters = [];
 
     // fill a <select> with the list of options from the api
     function fillSelect(selectElement, options) {
@@ -78,15 +303,22 @@
             return;
         }
 
+        areaField.style.display = 'none';
+        pokemonAreaField.style.display = 'none';
+        submitWrap.style.display = 'none';
+        submitBtn.style.display = 'none';
+        currentEncounters = [];
+
+        locationField.style.display = 'block';
+        locationSelect.disabled = true;
+        locationSpinner.classList.add('active');
+
         const response = await fetch(`/api/locations?generation=${generation}`);
         const locations = await response.json();
 
         fillSelect(locationSelect, locations);
-        locationField.style.display = 'block';
-
-        areaField.style.display = 'none';
-        pokemonAreaField.style.display = 'none';
-        submitBtn.style.display = 'none';
+        locationSelect.disabled = false;
+        locationSpinner.classList.remove('active');
     });
 
     locationSelect.addEventListener('change', async () => {
@@ -95,14 +327,21 @@
             return;
         }
 
+        pokemonAreaField.style.display = 'none';
+        submitWrap.style.display = 'none';
+        submitBtn.style.display = 'none';
+        currentEncounters = [];
+
+        areaField.style.display = 'block';
+        areaSelect.disabled = true;
+        areaSpinner.classList.add('active');
+
         const response = await fetch(`/api/areas?location=${encodeURIComponent(location)}`);
         const areas = await response.json();
 
         fillSelect(areaSelect, areas);
-        areaField.style.display = 'block';
-
-        pokemonAreaField.style.display = 'none';
-        submitBtn.style.display = 'none';
+        areaSelect.disabled = false;
+        areaSpinner.classList.remove('active');
     });
 
     areaSelect.addEventListener('change', async () => {
@@ -111,15 +350,43 @@
             return;
         }
 
+        pokemonAreaField.style.display = 'block';
+        pokemonList.innerHTML = '';
+        pokemonSpinner.classList.add('active');
+        submitWrap.style.display = 'none';
+        submitBtn.style.display = 'none';
+
         const response = await fetch(`/api/encounters?area=${encodeURIComponent(area)}`);
         const encounters = await response.json();
 
+        currentEncounters = encounters; // keep for the click handler
         fillList(pokemonList, encounters);
-        pokemonAreaField.style.display = 'block';
+        pokemonSpinner.classList.remove('active');
 
-        // area is now the last real selection, so the submit button
+        // area is now the last real selection, so the button
         // becomes available as soon as it's chosen
+        submitWrap.style.display = 'flex';
         submitBtn.style.display = 'inline-block';
+    });
+
+    submitBtn.addEventListener('click', () => {
+        if (currentEncounters.length === 0) {
+            return;
+        }
+
+        submitBtn.disabled = true;
+        submitBtn.textContent = 'Loading...';
+
+        const random = currentEncounters[Math.floor(Math.random() * currentEncounters.length)];
+
+        const params = new URLSearchParams({
+            generation_number: generationSelect.value,
+            location_number: locationSelect.value,
+            area_number: areaSelect.value,
+            pokemon_name: random.value
+        });
+
+        window.location.href = `/result?${params.toString()}`;
     });
 </script>
 

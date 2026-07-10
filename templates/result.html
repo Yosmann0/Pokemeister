@@ -1,8 +1,388 @@
 {% extends "base.html" %}
 
 {% block content %}
-    <h2>Your selection</h2>
-    <p>Generation: {{ generation }}</p>
-    <p>Location: {{ location }}</p>
-    <p>Area: {{ area }}</p>
+
+<style>
+    .page-wrap {
+        max-width: 720px;
+        margin: 0 auto;
+        padding: 24px 16px 60px;
+        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+        color: #2b2b33;
+    }
+
+    .page-title {
+        text-align: center;
+        font-size: 1.8rem;
+        letter-spacing: 0.5px;
+        margin-bottom: 6px;
+    }
+
+    .selection-summary {
+        display: flex;
+        flex-wrap: wrap;
+        justify-content: center;
+        gap: 8px;
+        margin-bottom: 28px;
+    }
+
+    .selection-summary span {
+        background: #f1f2f6;
+        border: 1px solid #e1e3ea;
+        border-radius: 999px;
+        padding: 4px 12px;
+        font-size: 0.8rem;
+        color: #565a6e;
+    }
+
+    .selection-summary strong {
+        color: #2b2b33;
+    }
+
+    .pokemon-card {
+        position: relative;
+        border-radius: 20px;
+        background: linear-gradient(160deg, #ffffff 0%, #f7f8fc 100%);
+        box-shadow: 0 12px 30px rgba(20, 20, 40, 0.12), 0 2px 6px rgba(20, 20, 40, 0.06);
+        overflow: hidden;
+        border: 1px solid #ececf4;
+    }
+
+    .card-header {
+        position: relative;
+        padding: 32px 24px 90px;
+        background: linear-gradient(135deg, var(--primary-type-color, #8fa6d6), #5a6bc4);
+        color: #fff;
+        text-align: center;
+    }
+
+    .card-header-decor {
+        position: absolute;
+        inset: 0;
+        overflow: hidden;
+        pointer-events: none;
+        border-radius: 20px 20px 0 0;
+    }
+
+    .card-header-decor::before {
+        content: "";
+        position: absolute;
+        top: -60px;
+        right: -60px;
+        width: 220px;
+        height: 220px;
+        background: rgba(255, 255, 255, 0.12);
+        border-radius: 50%;
+    }
+
+    .card-header-decor::after {
+        content: "";
+        position: absolute;
+        bottom: -80px;
+        left: -40px;
+        width: 180px;
+        height: 180px;
+        background: rgba(255, 255, 255, 0.08);
+        border-radius: 50%;
+    }
+
+    .dex-number {
+        position: relative;
+        font-size: 0.9rem;
+        font-weight: 600;
+        opacity: 0.85;
+        letter-spacing: 1px;
+    }
+
+    .pokemon-name {
+        position: relative;
+        font-size: 2.1rem;
+        margin: 4px 0 0;
+        text-transform: capitalize;
+        text-shadow: 0 2px 6px rgba(0, 0, 0, 0.15);
+    }
+
+    .pokewiki-link {
+        position: relative;
+        display: inline-block;
+        margin-top: 12px;
+        color: #fff;
+        font-size: 0.78rem;
+        font-weight: 600;
+        text-decoration: none;
+        background: rgba(255, 255, 255, 0.18);
+        padding: 6px 16px;
+        border-radius: 999px;
+        transition: background 0.15s ease;
+    }
+
+    .pokewiki-link:hover {
+        background: rgba(255, 255, 255, 0.3);
+    }
+
+    .sprite-wrap {
+        position: absolute;
+        left: 50%;
+        bottom: -70px;
+        transform: translateX(-50%);
+        width: 150px;
+        height: 150px;
+        background: #fff;
+        border-radius: 50%;
+        box-shadow: 0 10px 24px rgba(20, 20, 40, 0.18);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border: 4px solid #fff;
+    }
+
+    .sprite-wrap img {
+        width: 110px;
+        height: 110px;
+        image-rendering: pixelated;
+        filter: drop-shadow(0 4px 6px rgba(0, 0, 0, 0.15));
+    }
+
+    .card-body {
+        padding: 90px 28px 32px;
+    }
+
+    .type-badges {
+        display: flex;
+        justify-content: center;
+        gap: 8px;
+        margin-bottom: 28px;
+        flex-wrap: wrap;
+    }
+
+    .type-badge {
+        padding: 6px 18px;
+        border-radius: 999px;
+        font-size: 0.78rem;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 0.6px;
+        color: #fff;
+        box-shadow: 0 3px 8px rgba(0, 0, 0, 0.15);
+    }
+
+    .quick-stats {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 12px;
+        margin-bottom: 28px;
+    }
+
+    .quick-stat {
+        background: #f7f8fc;
+        border: 1px solid #ececf4;
+        border-radius: 12px;
+        text-align: center;
+        padding: 12px 8px;
+    }
+
+    .quick-stat .label {
+        display: block;
+        font-size: 0.7rem;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        color: #9297a8;
+        margin-bottom: 4px;
+    }
+
+    .quick-stat .value {
+        font-size: 1.05rem;
+        font-weight: 700;
+        color: #2b2b33;
+    }
+
+    .section-title {
+        font-size: 1rem;
+        text-transform: uppercase;
+        letter-spacing: 0.8px;
+        color: #6b6f80;
+        margin: 0 0 12px;
+        border-left: 4px solid #5a6bc4;
+        padding-left: 10px;
+    }
+
+    .stat-rows {
+        display: flex;
+        flex-direction: column;
+        gap: 12px;
+    }
+
+    .stat-row {
+        display: grid;
+        grid-template-columns: 90px 1fr 40px;
+        align-items: center;
+        gap: 10px;
+    }
+
+    .stat-row .stat-name {
+        font-size: 0.78rem;
+        text-transform: uppercase;
+        letter-spacing: 0.4px;
+        color: #6b6f80;
+    }
+
+    .stat-row .stat-value {
+        font-size: 0.85rem;
+        font-weight: 700;
+        text-align: right;
+        color: #2b2b33;
+    }
+
+    .bar-track {
+        background: #ececf4;
+        border-radius: 999px;
+        height: 10px;
+        overflow: hidden;
+    }
+
+    .bar-fill {
+        height: 100%;
+        border-radius: 999px;
+        background: linear-gradient(90deg, #5a6bc4, #8fa6d6);
+    }
+
+    .stat-total {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-top: 14px;
+        padding-top: 14px;
+        border-top: 1px dashed #ececf4;
+        font-size: 0.85rem;
+        color: #6b6f80;
+    }
+
+    .stat-total strong {
+        font-size: 1rem;
+        color: #2b2b33;
+    }
+
+    .empty-state {
+        text-align: center;
+        padding: 60px 20px;
+        color: #7a7f92;
+        background: #f7f8fc;
+        border: 1px dashed #d7d9e4;
+        border-radius: 16px;
+    }
+
+    .back-link {
+        display: inline-block;
+        margin-top: 28px;
+        text-decoration: none;
+        color: #5a6bc4;
+        font-weight: 600;
+        font-size: 0.9rem;
+    }
+
+    .back-link:hover {
+        text-decoration: underline;
+    }
+
+    .back-link-wrap {
+        text-align: center;
+    }
+</style>
+
+{% set type_colors = {
+    "normal": "#A8A77A", "fire": "#EE8130", "water": "#6390F0", "electric": "#F7D02C",
+    "grass": "#7AC74C", "ice": "#96D9D6", "fighting": "#C22E28", "poison": "#A33EA1",
+    "ground": "#E2BF65", "flying": "#A98FF3", "psychic": "#F95587", "bug": "#A6B91A",
+    "rock": "#B6A136", "ghost": "#735797", "dragon": "#6F35FC", "dark": "#705746",
+    "steel": "#B7B7CE", "fairy": "#D685AD"
+} %}
+
+<div class="page-wrap">
+    <h1 class="page-title">Result</h1>
+
+    <div class="selection-summary">
+        <span>Generation: <strong>{{ generation }}</strong></span>
+        <span>Location: <strong>{{ location }}</strong></span>
+        <span>Area: <strong>{{ area }}</strong></span>
+    </div>
+
+    {% if pokemon_data %}
+        {% set type_list = pokemon_data.typing | list %}
+        {% set primary_type = type_list[0] if type_list else "normal" %}
+        {% set primary_color = type_colors.get(primary_type, "#8fa6d6") %}
+        <div class="pokemon-card">
+            <div class="card-header" style="background: linear-gradient(135deg, {{ primary_color }}, #5a6bc4);">
+                <div class="card-header-decor"></div>
+                <div class="dex-number">#{{ '%03d' % pokemon_data.id }}</div>
+                <h2 class="pokemon-name">{{ pokemon_data.name | capitalize }}</h2>
+                {% if pokemon_data.pokewiki_url %}
+                    <a class="pokewiki-link" href="{{ pokemon_data.pokewiki_url }}" target="_blank" rel="noopener">View on PokeWiki &rarr;</a>
+                {% endif %}
+
+                {% if pokemon_data.sprite %}
+                    <div class="sprite-wrap">
+                        <img src="{{ pokemon_data.sprite }}" alt="{{ pokemon_data.name }}">
+                    </div>
+                {% endif %}
+            </div>
+
+            <div class="card-body">
+                <div class="type-badges">
+                    {% for t in type_list %}
+                        <span class="type-badge" style="background: {{ type_colors.get(t, '#8fa6d6') }};">{{ t }}</span>
+                    {% endfor %}
+                </div>
+
+                <div class="quick-stats">
+                    <div class="quick-stat">
+                        <span class="label">Height</span>
+                        <span class="value">{{ pokemon_data.height / 10 }} m</span>
+                    </div>
+                    <div class="quick-stat">
+                        <span class="label">Weight</span>
+                        <span class="value">{{ pokemon_data.weight / 10 }} kg</span>
+                    </div>
+                    <div class="quick-stat">
+                        <span class="label">Dex No.</span>
+                        <span class="value">{{ pokemon_data.id }}</span>
+                    </div>
+                </div>
+
+                <h3 class="section-title">Base Stats</h3>
+                {% set stat_labels = {
+                    "HP": "HP", "ATK": "Attack", "DEF": "Defense",
+                    "SPEATK": "Sp. Atk", "SPEDEF": "Sp. Def", "SPE": "Speed"
+                } %}
+                <div class="stat-rows">
+                    {% for stat_key, stat_value in pokemon_data.stats.items() %}
+                        {% if stat_key != "BST" %}
+                            <div class="stat-row">
+                                <span class="stat-name">{{ stat_labels.get(stat_key, stat_key) }}</span>
+                                <div class="bar-track">
+                                    <div class="bar-fill" style="width: {{ (stat_value / 255 * 100) | round(1) }}%;"></div>
+                                </div>
+                                <span class="stat-value">{{ stat_value }}</span>
+                            </div>
+                        {% endif %}
+                    {% endfor %}
+                </div>
+                {% if pokemon_data.stats.BST %}
+                    <div class="stat-total">
+                        <span>Base Stat Total</span>
+                        <strong>{{ pokemon_data.stats.BST }}</strong>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+    {% else %}
+        <div class="empty-state">
+            <p>No Pokémon found.</p>
+        </div>
+    {% endif %}
+
+    <div class="back-link-wrap">
+        <a class="back-link" href="/selection">&larr; Back to selection</a>
+    </div>
+</div>
+
 {% endblock %}

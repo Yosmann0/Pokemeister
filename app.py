@@ -1,48 +1,67 @@
 from flask import Flask, render_template, request, jsonify
+import requests
 
 app = Flask(__name__)
 
 
 def get_generations():
-    return [1, 2, 3, 4, 5, 6, 7, 8, 9]
+    return [1, 2, 3, 4, 5, 6, 7, 8]
 
+def get_pokemon_data(pokemon_name):
+    print(f"DEBUG: get_pokemon_data({pokemon_name}) called")
+
+    if pokemon_name == "pikachu":
+        return {
+            'name': 'pikachu',
+            'stats': {'HP': 35, 'ATK': 55, 'DEF': 40, 'SPEATK': 50, 'SPEDEF': 50, 'SPE': 90, 'BST': 320},
+            'id': 25, 
+            'typing': {'electric'}, 
+            'species': 'pikachu', 
+            'pokewiki_url': 'https://www.pokewiki.de/pikachu', 
+            'height': 4, 'weight': 60, 'sprite': 
+            'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/25.png'
+            }
+
+    else:
+        print(f"DEBUG: get_pokemon_data({pokemon_name}) -> Pokemon not found")
+        return {}
 
 def get_locations_for_generation(generation):
     locations_by_generation = {
-        1: {"location1": "l_url1", "location2": "l_url2", "location3": "l_url3"},
-        2: {"location4": "l_url4", "location5": "l_url5"},
-        3: {"location6": "l_url6", "location7": "l_url7"},
+        1: {"location1": "1", "location2": "2", "location3": "3"},
+        2: {"location4": "4", "location5": "5"},
+        3: {"location6": "6", "location7": "7"},
     }
     locations = locations_by_generation.get(generation, {"Unknown Location": "unknown_url"})
 
-    result = [{"key": name, "value": url} for name, url in locations.items()]
+    result = [{"key": name, "value": number} for name, number in locations.items()]
     print(f"DEBUG: get_locations_for_generation({generation}) -> {result}")
     return result
 
 
-def get_areas_for_location(location_url):
+def get_areas_for_location(location_number):
     areas_by_location = {
-        "l_url1": {"area1": "a_url1", "area2": "a_url2", "area3": "a_url3"},
-        "l_url2": {"area1": "a_url4", "area2": "a_url5"},
-        "l_url3": {"area1": "a_url6", "area2": "a_url7"},
+        1: {"area1": "1", "area2": "2", "area3": "3"},
+        2: {"area1": "4", "area2": "5"},
+        3: {"area1": "6", "area2": "7"},
     }
-    areas = areas_by_location.get(location_url, {"empty_area1": "empty_a_url1"})
+    areas = areas_by_location.get(location_number, {"empty_area1": "1"})
 
     result = [{"key": name, "value": url} for name, url in areas.items()]
-    print(f"DEBUG: get_areas_for_location({location_url}) -> {result}")
+    print(f"DEBUG: get_areas_for_location({location_number}) -> {result}")
     return result
 
 
-def get_encounter_by_area(area_url):
+def get_encounter_by_area(area_number):
     encounter_by_area = {
-        "a_url1": {"pokemon1": "p_url1", "pokemon2": "p_url2", "pokemon3": "p_url3"},
-        "a_url2": {"pokemon1": "p_url4", "pokemon2": "p_url5"},
-        "a_url3": {"pokemon1": "p_url6", "pokemon2": "p_url7"},
+        1: {"pikachu": "p_url1", "pokemon2": "p_url2", "pokemon3": "p_url3"},
+        2: {"pokemon1": "p_url4", "pokemon2": "p_url5"},
+        3: {"pikachu": "pikachu"},
     }
-    encounters = encounter_by_area.get(area_url, {"empty_pokemon1": "empty_p_url1"})
+    encounters = encounter_by_area.get(area_number, {"empty_pokemon1": "empty_p_url1"})
 
     result = [{"key": name, "value": url} for name, url in encounters.items()]
-    print(f"DEBUG: get_encounter_by_area({area_url}) -> {result}")
+    print(f"DEBUG: get_encounter_by_area({area_number}) -> {result}")
     return result
 
 @app.route('/')
@@ -64,10 +83,20 @@ def selection():
 
 @app.route('/result')
 def result():
-    generation = request.args.get('generation')
-    location = request.args.get('location')
-    area = request.args.get('area')
-    return render_template('result.html', generation=generation, location=location, area=area)
+    generation_number = request.args.get('generation_number', type=int)
+    location_number = request.args.get('location_number', type=int)
+    area_number = request.args.get('area_number', type=int)
+    pokemon_name = request.args.get('pokemon_name', type=str)
+    
+    pokemon_data = get_pokemon_data(pokemon_name)
+
+    return render_template(
+        'result.html',
+        generation=generation_number,
+        location=location_number,
+        area=area_number,
+        pokemon_data=pokemon_data
+    )
 
 
 # --- API routes (return JSON, called by fetch() in the browser) -----------
@@ -84,20 +113,20 @@ def api_locations():
 
 @app.route('/api/areas')
 def api_areas():
-    location = request.args.get('location')
-    if not location:
+    location_number = request.args.get('location', type=int)
+    if not location_number:
         return jsonify([])
 
-    areas = get_areas_for_location(location)
+    areas = get_areas_for_location(location_number)
     return jsonify(areas)
 
 @app.route('/api/encounters')
 def api_encounters():
-    area = request.args.get('area')
-    if not area:
+    area_number = request.args.get('area', type=int)
+    if not area_number:
         return jsonify([])
 
-    encounters = get_encounter_by_area(area)
+    encounters = get_encounter_by_area(area_number)
     return jsonify(encounters)
 
 
