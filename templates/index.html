@@ -1,0 +1,8 @@
+{% extends "base.html" %}
+
+{% block content %}
+    <h1>Favoritenliste von {{ user.username }}!</h1>
+    {% for favorite in favorites %}
+    <div><p>{{ favorite.pokemon_name }} Begründung: <b>{{ favorite.reason }}</b></p></div>
+    {% endfor %}
+{% endblock %}
