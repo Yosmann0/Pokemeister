@@ -70,7 +70,7 @@ def get_pokemon_info_by_name(pokemon_name:str):
 
     return pokemon_dict
 
-def _fetch_by_id(endpoint, i):
+def fetch_by_id(endpoint, i):
     response_id = session.get(f"{URL_BASE}{endpoint}/{i}/")
     response_id.raise_for_status()
     data_id = response_id.json()
@@ -78,7 +78,7 @@ def _fetch_by_id(endpoint, i):
 
 def get_full_list(endpoint, id_range, max_workers=10):
     with ThreadPoolExecutor(max_workers=max_workers) as executor:
-        return list(executor.map(lambda i: _fetch_by_id(endpoint, i), id_range))
+        return list(executor.map(lambda i: fetch_by_id(endpoint, i), id_range))
 
 def get_full_version_list():
     return get_full_list('version', range(1, 40))
