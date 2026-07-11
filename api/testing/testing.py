@@ -2,18 +2,21 @@ import requests
 import json
 import random
 import re
+from concurrent.futures import ThreadPoolExecutor
 
 URL_BASE = "https://pokeapi.co/api/v2/"
+
+session = requests.Session()
 
 def get_trailing_number(url:str) -> int:
     return int(re.search(r'(\d+)/?$', url).group(1))
 
 def get_locations_for_generation(generation:int):
-    response_gen = requests.get(f"{URL_BASE}generation/{generation}/")
+    response_gen = session.get(f"{URL_BASE}generation/{generation}/")
     
     data_gen = response_gen.json()
     
-    response_gen = requests.get(data_gen['main_region']['url'])
+    response_gen = session.get(data_gen['main_region']['url'])
     
     data_gen = response_gen.json()
 
@@ -25,7 +28,7 @@ def get_locations_for_generation(generation:int):
     return list_locations
 
 def get_areas_for_location(location_num:int):
-    response_loc = requests.get(f"{URL_BASE}location/{location_num}/")
+    response_loc = session.get(f"{URL_BASE}location/{location_num}/")
 
     data_loc = response_loc.json()
 
@@ -38,7 +41,7 @@ def get_areas_for_location(location_num:int):
 
 def get_pokemon_for_area(area_num:int):
     
-    response_enc = requests.get(f"{URL_BASE}location-area/{area_num}/")
+    response_enc = session.get(f"{URL_BASE}location-area/{area_num}/")
 
     data_enc = response_enc.json()
 
@@ -52,7 +55,7 @@ def get_pokemon_for_area(area_num:int):
 
 def get_pokemon_info_by_name(pokemon_name:str):
     
-    pokemon_url_data = requests.get(f"{URL_BASE}pokemon/{pokemon_name}")
+    pokemon_url_data = session.get(f"{URL_BASE}pokemon/{pokemon_name}")
     pokemon_json_data = pokemon_url_data.json()
     
     pokemon_dict:dict = dict(name = f"{pokemon_json_data['name']}", stats = {"HP": pokemon_json_data['stats'][0]['base_stat'], "ATK": pokemon_json_data['stats'][1]['base_stat'], "DEF": pokemon_json_data['stats'][2]['base_stat'], "SPEATK": pokemon_json_data['stats'][3]['base_stat'], "SPEDEF": pokemon_json_data['stats'][4]['base_stat'], "SPE": pokemon_json_data['stats'][5]['base_stat']})
@@ -67,28 +70,40 @@ def get_pokemon_info_by_name(pokemon_name:str):
 
     return pokemon_dict
 
+def _fetch_by_id(endpoint, i):
+    response_id = session.get(f"{URL_BASE}{endpoint}/{i}/")
+    response_id.raise_for_status()
+    data_id = response_id.json()
+    return {'name': data_id['name'], 'id': data_id['id']}
+
+def get_full_list(endpoint, id_range, max_workers=10):
+    with ThreadPoolExecutor(max_workers=max_workers) as executor:
+        return list(executor.map(lambda i: _fetch_by_id(endpoint, i), id_range))
+
 def get_full_version_list():
-    version_list = []
-    for i in range(1, 25):
-        requests_version = requests.get(f"{URL_BASE}version-group/{i}/")
-        data_version = requests_version.json()
-        version_list.append({'name': data_version['name'], 'id': data_version['id']})
-    return version_list
+    return get_full_list('version', range(1, 40))
 
+def get_full_version_group_list():
+    return get_full_list('version-group', range(1, 25))
 
+def get_full_region_list():
+    return get_full_list('region', range(1, 10))
+
+def get_full_generation_list():
+    return get_full_list('generation', range(1, 9))
 
 if __name__ == '__main__':
     generation = [1,2,3,4,5,6,7,8]
     
     url = f"{URL_BASE}generation/{generation[0]}/"
     
-    response = requests.get(url)
+    response = session.get(url)
     
     data = response.json()
     
     print(data['main_region']['name'], data['main_region']['url'])
     
-    response = requests.get(data['main_region']['url'])
+    response = session.get(data['main_region']['url'])
     
     data = response.json()
     
@@ -100,7 +115,7 @@ if __name__ == '__main__':
     
     print(data['locations'][34]['name'], data['locations'][34]['url'])
     
-    response = requests.get(data['locations'][34]['url'])
+    response = session.get(data['locations'][34]['url'])
     
     data = response.json()
     
@@ -112,7 +127,7 @@ if __name__ == '__main__':
     
     print(data['areas'][0]['name'], data['areas'][0]['url'])
     
-    response = requests.get(data['areas'][0]['url'])
+    response = session.get(data['areas'][0]['url'])
     
     data = response.json()
     
@@ -126,7 +141,7 @@ if __name__ == '__main__':
     test = data['pokemon_encounters'][random.randint(0, (len(list_locations) - 1))]['pokemon']        #list length is 1 higher than index
     print(test)
     
-    pokemon_url_data = requests.get(f"{URL_BASE}pokemon/pikachu")
+    pokemon_url_data = session.get(f"{URL_BASE}pokemon/pikachu")
     pokemon_json_data = pokemon_url_data.json()
     
     pokemon_dict:dict = dict(name = f"{pokemon_json_data['name']}", stats = {"HP": pokemon_json_data['stats'][0]['base_stat'], "ATK": pokemon_json_data['stats'][1]['base_stat'], "DEF": pokemon_json_data['stats'][2]['base_stat'], "SPEATK": pokemon_json_data['stats'][3]['base_stat'], "SPEDEF": pokemon_json_data['stats'][4]['base_stat'], "SPE": pokemon_json_data['stats'][5]['base_stat']})
@@ -140,5 +155,11 @@ if __name__ == '__main__':
     pokemon_dict['sprite'] = f"{pokemon_json_data['sprites']['front_default']}"
     
     print(pokemon_dict, len(pokemon_dict))
-    version_groups = get_full_version_list()
+    version_groups = get_full_version_group_list()
     print(version_groups)
+    version_list = get_full_version_list()
+    print(version_list)
+    region_list = get_full_region_list()
+    print(region_list)
+    generation_list = get_full_generation_list()
+    print(generation_list)
