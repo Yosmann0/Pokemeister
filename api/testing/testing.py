@@ -39,7 +39,7 @@ def get_areas_for_location(location_num:int):
 
     return list_area
 
-def get_pokemon_for_area(area_num:int):
+def get_encounter_for_area(area_num:int):
     
     response_enc = session.get(f"{URL_BASE}location-area/{area_num}/")
 
