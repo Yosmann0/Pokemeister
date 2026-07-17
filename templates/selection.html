@@ -419,8 +419,9 @@
         pokemonSpinner.classList.add('active');
         submitWrap.style.display = 'none';
         submitBtn.style.display = 'none';
+        const game = gameSelect.value;
 
-        const response = await fetch(`/api/encounters?area=${encodeURIComponent(area)}`);
+        const response = await fetch(`/api/encounters?area=${encodeURIComponent(area)}&game=${encodeURIComponent(game)}`);
         const encounters = await response.json();
 
         currentEncounters = encounters; // keep for the click handler
