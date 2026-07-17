@@ -53,6 +53,20 @@ def get_encounter_for_area(area_num:int):
 
     return pokemon_list
 
+def get_encounter_for_area_filtered(area_num:int, game_str:str):
+    
+    response_enc = session.get(f"{URL_BASE}location-area/{area_num}/")
+
+    data_enc = response_enc.json()
+
+    data_enc = data_enc['pokemon_encounters']
+    filtered_enc = [key for key in data_enc if any(version_detail['version']['name'] == game_str for version_detail in key['version_details'])]
+    list_enc = [item['pokemon'] for item in filtered_enc]
+    pokemon_list = {item["name"]: get_trailing_number(item["url"]) for item in list_enc}
+    pokemon_list= [{"name": name, "id": number} for name, number in pokemon_list.items()]
+
+    return pokemon_list
+
 def get_pokemon_info_by_name(pokemon_name:str):
     
     pokemon_url_data = session.get(f"{URL_BASE}pokemon/{pokemon_name}")
@@ -126,20 +140,20 @@ if __name__ == '__main__':
     print(list_locations)
     
     print(data['areas'][0]['name'], data['areas'][0]['url'])
+
+    Edition = "firered"
+    list_locations = get_encounter_for_area_filtered(get_trailing_number(data['areas'][0]['url']), Edition)
     
-    response = session.get(data['areas'][0]['url'])
-    
-    data = response.json()
-    
-    data_locations = data['pokemon_encounters']
-    list_locations = [key for key in data_locations]
-    list_locations = [item['pokemon'] for item in list_locations]
-    list_locations = {item["name"]: get_trailing_number(item["url"]) for item in list_locations}
-    list_locations = [{"name": name, "id": number} for name, number in list_locations.items()]
-    print(list_locations)
-    
-    test = data['pokemon_encounters'][random.randint(0, (len(list_locations) - 1))]['pokemon']        #list length is 1 higher than index
-    print(test)
+    #response = session.get(data['areas'][0]['url'])
+    #
+    #data = response.json()
+    #
+    #data_locations = data['pokemon_encounters']
+    #list_locations = [key for key in data_locations]
+    #list_locations = [item['pokemon'] for item in list_locations]
+    #list_locations = {item["name"]: get_trailing_number(item["url"]) for item in list_locations}
+    #list_locations = [{"name": name, "id": number} for name, number in list_locations.items()]
+    print(list_locations, f"Anzahl der Encounter für Edition {Edition}: {len(list_locations)}")
     
     pokemon_url_data = session.get(f"{URL_BASE}pokemon/pikachu")
     pokemon_json_data = pokemon_url_data.json()
