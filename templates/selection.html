@@ -204,22 +204,33 @@
     <p class="page-subtitle">Narrow it down step by step, then let chance pick your Pokémon.</p>
 
     <div class="steps">
-        <div class="field" id="generation-field">
+        <div class="field" id="game-field">
             <div class="field-header">
                 <span class="step-badge">1</span>
-                <label for="generation">Select Pokémon Generation</label>
+                <label for="game">Select Pokémon Game</label>
             </div>
-            <select name="generation" id="generation">
+            <select name="game" id="game">
                 <option value="" selected disabled>-- choose --</option>
-                {% for generation in generations %}
-                    <option value="{{ generation }}">{{ generation }}</option>
+                {% for game in games %}
+                    <option value="{{ game }}">{{ game }}</option>
                 {% endfor %}
+            </select>
+        </div>
+
+        <div class="field" id="region-field" style="display:none;">
+            <div class="field-header">
+                <span class="step-badge">2</span>
+                <label for="region">Select a Region</label>
+                <span class="spinner" id="region-spinner"></span>
+            </div>
+            <select name="region" id="region">
+                <option value="" selected disabled>-- choose --</option>
             </select>
         </div>
 
         <div class="field" id="location-field" style="display:none;">
             <div class="field-header">
-                <span class="step-badge">2</span>
+                <span class="step-badge">3</span>
                 <label for="location">Select Location</label>
                 <span class="spinner" id="location-spinner"></span>
             </div>
@@ -230,7 +241,7 @@
 
         <div class="field" id="area-field" style="display:none;">
             <div class="field-header">
-                <span class="step-badge">3</span>
+                <span class="step-badge">4</span>
                 <label for="area">Select Area</label>
                 <span class="spinner" id="area-spinner"></span>
             </div>
@@ -241,7 +252,7 @@
 
         <div class="field" id="pokemon-area-field" style="display:none;">
             <div class="field-header">
-                <span class="step-badge">4</span>
+                <span class="step-badge">5</span>
                 <label>Available Pokémon in this Area</label>
                 <span class="spinner" id="pokemon-spinner"></span>
             </div>
@@ -257,7 +268,10 @@
 </div>
 
 <script>
-    const generationSelect = document.getElementById('generation');
+    const gameSelect = document.getElementById('game');
+    const regionField = document.getElementById('region-field');
+    const regionSelect = document.getElementById('region');
+    const regionSpinner = document.getElementById('region-spinner');
     const locationField = document.getElementById('location-field');
     const locationSelect = document.getElementById('location');
     const locationSpinner = document.getElementById('location-spinner');
@@ -280,14 +294,35 @@
             .replace(/\b\w/g, (char) => char.toUpperCase());
     }
 
+    // Format the game names that were rendered by Jinja
+
+    document.querySelectorAll('#game option').forEach((option) => {
+
+        if (option.value) {          // Skip the "-- choose --" option
+
+            option.textContent = formatLabel(option.textContent);
+
+        }
+
+    });
+
     // fill a <select> with the list of options from the api
     function fillSelect(selectElement, options) {
         selectElement.innerHTML = '<option value="" selected disabled>-- choose --</option>';
 
         options.forEach((option) => {
             const optionElement = document.createElement('option');
-            optionElement.value = option.id;
-            optionElement.textContent = formatLabel(option.name);
+
+            if (typeof option === "string") {
+                // List of strings
+                optionElement.value = option;
+                optionElement.textContent = formatLabel(option);
+            } else {
+                // List of objects with id and name
+                optionElement.value = option.id;
+                optionElement.textContent = formatLabel(option.name);
+            }
+
             selectElement.appendChild(optionElement);
         });
     }
@@ -303,9 +338,32 @@
         });
     }
 
-    generationSelect.addEventListener('change', async () => {
-        const generation = generationSelect.value;
-        if (!generation) {
+    gameSelect.addEventListener('change', async () => {
+        const game = gameSelect.value;
+        if (!game) {
+            return;
+        }
+        areaField.style.display = 'none';
+        pokemonAreaField.style.display = 'none';
+        submitWrap.style.display = 'none';
+        submitBtn.style.display = 'none';
+        currentEncounters = [];
+
+        regionField.style.display = 'block';
+        regionSelect.disabled = true;
+        regionSpinner.classList.add('active');
+
+        const response = await fetch(`/api/regions?game=${game}`);
+        const regions = await response.json();
+
+        fillSelect(regionSelect, regions);
+        regionSelect.disabled = false;
+        regionSpinner.classList.remove('active');
+    });
+
+    regionSelect.addEventListener('change', async () => {
+        const region = regionSelect.value;
+        if (!region) {
             return;
         }
 
@@ -319,7 +377,7 @@
         locationSelect.disabled = true;
         locationSpinner.classList.add('active');
 
-        const response = await fetch(`/api/locations?generation=${generation}`);
+        const response = await fetch(`/api/locations?region=${region}`);
         const locations = await response.json();
 
         fillSelect(locationSelect, locations);
@@ -386,7 +444,8 @@
         const random = currentEncounters[Math.floor(Math.random() * currentEncounters.length)];
 
         const params = new URLSearchParams({
-            generation: generationSelect.selectedOptions[0].text,
+            game: gameSelect.selectedOptions[0].text,
+            region: regionSelect.selectedOptions[0].text,
             location: locationSelect.selectedOptions[0].text,
             area: areaSelect.selectedOptions[0].text,
             pokemon_name: random.name

@@ -1,6 +1,5 @@
 from flask import Flask, render_template, request, jsonify
-import requests
-from data import get_pokemon_info_by_name, get_locations_for_generation, get_areas_for_location, get_encounter_for_area
+from data import get_all_games, get_pokemon_info_by_name, get_locations_by_region, get_areas_for_location, get_encounter_for_area, get_region_by_game
 
 app = Flask(__name__)
 
@@ -21,13 +20,14 @@ def index():
 
 @app.route('/selection')
 def selection():
-    generations = get_generations()
-    return render_template('selection.html', generations=generations)
+    games = get_all_games()
+    return render_template('selection.html', games=games)
 
 
 @app.route('/result')
 def result():
-    generation = request.args.get('generation')
+    game = request.args.get('game')
+    region = request.args.get('region')
     location = request.args.get('location')
     area = request.args.get('area')
     pokemon_name = request.args.get('pokemon_name')
@@ -36,7 +36,8 @@ def result():
 
     return render_template(
         'result.html',
-        generation=generation,
+        game=game,
+        region=region,
         location=location,
         area=area,
         pokemon_data=pokemon_data
@@ -47,11 +48,11 @@ def result():
 
 @app.route('/api/locations')
 def api_locations():
-    generation = request.args.get('generation', type=int)
-    if generation is None:
+    region = request.args.get('region', type=str)
+    if region is None:
         return jsonify([])
 
-    locations : list[dict[str, str]] = get_locations_for_generation(generation)
+    locations : list[dict[str, str]] = get_locations_by_region(region)
     return jsonify(locations)
 
 
@@ -73,7 +74,13 @@ def api_encounters():
     encounters = get_encounter_for_area(area_number)
     return jsonify(encounters)
 
-
+@app.route('/api/regions')
+def api_regions():
+    game_name = request.args.get('game', type=str)
+    if not game_name:
+        return jsonify([])
+    regions : list[str] = get_region_by_game(game_name)
+    return regions
 
 if __name__ == '__main__':
     app.run(debug=True)
