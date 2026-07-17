@@ -1,7 +1,7 @@
 import requests
 import json
-import random
 import re
+from typing import List
 
 URL_BASE = "https://pokeapi.co/api/v2/"
 
@@ -15,29 +15,13 @@ session = requests.Session()
 def get_trailing_number(url:str) -> int:
     return int(re.search(r'(\d+)/?$', url).group(1))
 
-def get_locations_by_generation(generation:int):           #To be deleted replaced by get_locations_by_region
-    response_gen = session.get(f"{URL_BASE}generation/{generation}/")
-    
-    data_gen = response_gen.json()
-    
-    response_gen = session.get(data_gen['main_region']['url'])
-    
-    data_gen = response_gen.json()
-
-    data_locations = data_gen['locations']
-    list_locations = [key for key in data_locations]
-    list_locations = {item["name"]: get_trailing_number(item["url"]) for item in data_locations}
-    list_locations = [{"name": name, "id": number} for name, number in list_locations.items()]
-    
-    return list_locations
-
-def get_all_games():
+def get_all_games() -> List[str]:
     return [game_list['name'] for game_list in FULL_LIST]
 
 def get_generation_by_game(game_str:str):
     return next(region_list['generation'] for region_list in FULL_LIST if region_list['name'] == game_str)
 
-def get_region_by_game(game_str:str):
+def get_region_by_game(game_str:str) -> str:
     return next(region_list['region'] for region_list in FULL_LIST if region_list['name'] == game_str)
 
 def get_locations_by_region(region:str):
@@ -147,15 +131,6 @@ if __name__ == '__main__':
     Edition = "firered"
     list_locations = get_encounter_by_area_filtered(get_trailing_number(data['areas'][0]['url']), Edition)
     
-    #response = session.get(data['areas'][0]['url'])
-    #
-    #data = response.json()
-    #
-    #data_locations = data['pokemon_encounters']
-    #list_locations = [key for key in data_locations]
-    #list_locations = [item['pokemon'] for item in list_locations]
-    #list_locations = {item["name"]: get_trailing_number(item["url"]) for item in list_locations}
-    #list_locations = [{"name": name, "id": number} for name, number in list_locations.items()]
     print(list_locations, f"Anzahl der Encounter für Edition {Edition}: {len(list_locations)}")
     
     pokemon_url_data = session.get(f"{URL_BASE}pokemon/pikachu")
@@ -172,14 +147,6 @@ if __name__ == '__main__':
     pokemon_dict['sprite'] = f"{pokemon_json_data['sprites']['front_default']}"
     
     print(pokemon_dict, len(pokemon_dict))
-    #version_groups = get_full_version_group_list()
-    #print(version_groups)
-    #version_list = get_full_version_list()
-    #print(version_list)
-    #region_list = get_full_region_list()
-    #print(region_list)
-    #generation_list = get_full_generation_list()
-    #print(generation_list)
     print(FULL_LIST)
     kanto_list = [game['name'] for game in FULL_LIST if 'kanto' in game['region']]
     print(kanto_list)
