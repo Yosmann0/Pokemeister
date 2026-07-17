@@ -2,6 +2,7 @@ import requests
 import json
 import random
 import re
+from typing import List
 
 URL_BASE = "https://pokeapi.co/api/v2/"
 
@@ -68,7 +69,7 @@ def get_all_games():
 def get_generation_by_game(game_str:str):
     return next(region_list['generation'] for region_list in FULL_LIST if region_list['name'] == game_str)
 
-def get_region_by_game(game_str:str):
+def get_region_by_game(game_str:str) -> List[str]:
     return next(region_list['region'] for region_list in FULL_LIST if region_list['name'] == game_str)
 
 def get_locations_by_region(region:str):
