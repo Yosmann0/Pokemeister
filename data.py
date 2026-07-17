@@ -21,7 +21,7 @@ def get_all_games() -> List[str]:
 def get_generation_by_game(game_str:str):
     return next(region_list['generation'] for region_list in FULL_LIST if region_list['name'] == game_str)
 
-def get_region_by_game(game_str:str) -> str:
+def get_region_by_game(game_str:str) -> List[str]:
     return next(region_list['region'] for region_list in FULL_LIST if region_list['name'] == game_str)
 
 def get_locations_by_region(region:str):
