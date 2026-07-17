@@ -2,21 +2,77 @@ import requests
 import json
 import random
 import re
-from concurrent.futures import ThreadPoolExecutor
 
 URL_BASE = "https://pokeapi.co/api/v2/"
+
+FULL_LIST = [{'name': 'red', 'id': 1, 'generation': 1, 'region': ['kanto']},
+    {'name': 'blue', 'id': 2, 'generation': 1, 'region': ['kanto']},
+    {'name': 'yellow', 'id': 3, 'generation': 1, 'region': ['kanto']},
+    {'name': 'gold', 'id': 4, 'generation': 2, 'region': ['johto', 'kanto']},
+    {'name': 'silver', 'id': 5, 'generation': 2, 'region': ['johto', 'kanto']},
+    {'name': 'crystal', 'id': 6, 'generation': 2, 'region': ['johto', 'kanto']},
+    {'name': 'ruby', 'id': 7, 'generation': 3, 'region': ['hoenn']},
+    {'name': 'sapphire', 'id': 8, 'generation': 3, 'region': ['hoenn']},
+    {'name': 'emerald', 'id': 9, 'generation': 3, 'region': ['hoenn']},
+    {'name': 'firered', 'id': 10, 'generation': 3, 'region': ['kanto']},
+    {'name': 'leafgreen', 'id': 11, 'generation': 3, 'region': ['kanto']},
+    {'name': 'diamond', 'id': 12, 'generation': 4, 'region': ['sinnoh']},
+    {'name': 'pearl', 'id': 13, 'generation': 4, 'region': ['sinnoh']},
+    {'name': 'platinum', 'id': 14, 'generation': 4, 'region': ['sinnoh']},
+    {'name': 'heartgold', 'id': 15, 'generation': 4, 'region': ['johto', 'kanto']},
+    {'name': 'soulsilver', 'id': 16, 'generation': 4, 'region': ['johto', 'kanto']},
+    {'name': 'black', 'id': 17, 'generation': 5, 'region': ['unova']},
+    {'name': 'white', 'id': 18, 'generation': 5, 'region': ['unova']},
+    {'name': 'black-2', 'id': 19, 'generation': 5, 'region': ['unova']},
+    {'name': 'white-2', 'id': 20, 'generation': 5, 'region': ['unova']},
+    {'name': 'x', 'id': 21, 'generation': 6, 'region': ['kalos']},
+    {'name': 'y', 'id': 22, 'generation': 6, 'region': ['kalos']},
+    {'name': 'omega-ruby', 'id': 23, 'generation': 6, 'region': ['hoenn']},
+    {'name': 'alpha-sapphire', 'id': 24, 'generation': 6, 'region': ['hoenn']},
+    {'name': 'sun', 'id': 25, 'generation': 7, 'region': ['alola']},
+    {'name': 'moon', 'id': 26, 'generation': 7, 'region': ['alola']},
+    {'name': 'ultra-sun', 'id': 27, 'generation': 7, 'region': ['alola']},
+    {'name': 'ultra-moon', 'id': 28, 'generation': 7, 'region': ['alola']},
+    {'name': 'lets-go-pikachu', 'id': 29, 'generation': 7, 'region': ['kanto']},
+    {'name': 'lets-go-eevee', 'id': 30, 'generation': 7, 'region': ['kanto']},
+    {'name': 'sword', 'id': 31, 'generation': 8, 'region': ['galar']},
+    {'name': 'shield', 'id': 32, 'generation': 8, 'region': ['galar']},
+    {'name': 'brilliant-diamond', 'id': 33, 'generation': 8, 'region': ['sinnoh']},
+    {'name': 'shining-pearl', 'id': 34, 'generation': 8, 'region': ['sinnoh']},
+    {'name': 'legends-arceus', 'id': 35, 'generation': 8, 'region': ['hisui']}]
 
 session = requests.Session()
 
 def get_trailing_number(url:str) -> int:
     return int(re.search(r'(\d+)/?$', url).group(1))
 
-def get_locations_for_generation(generation:int):
+def get_locations_for_generation(generation:int):           #To be deleted replaced by get_locations_by_region
     response_gen = session.get(f"{URL_BASE}generation/{generation}/")
     
     data_gen = response_gen.json()
     
     response_gen = session.get(data_gen['main_region']['url'])
+    
+    data_gen = response_gen.json()
+
+    data_locations = data_gen['locations']
+    list_locations = [key for key in data_locations]
+    list_locations = {item["name"]: get_trailing_number(item["url"]) for item in data_locations}
+    list_locations = [{"name": name, "id": number} for name, number in list_locations.items()]
+    
+    return list_locations
+
+def get_all_games():
+    return [game_list['name'] for game_list in FULL_LIST]
+
+def get_generation_by_game(game_str:str):
+    return next(region_list['generation'] for region_list in FULL_LIST if region_list['name'] == game_str)
+
+def get_region_by_game(game_str:str):
+    return next(region_list['region'] for region_list in FULL_LIST if region_list['name'] == game_str)
+
+def get_locations_by_region(region:str):
+    response_gen = session.get(f"{URL_BASE}region/{region}/")
     
     data_gen = response_gen.json()
 
@@ -83,66 +139,6 @@ def get_pokemon_info_by_name(pokemon_name:str):
     pokemon_dict['sprite'] = f"{pokemon_json_data['sprites']['front_default']}"
 
     return pokemon_dict
-
-def fetch_by_id(endpoint, i):
-    response_id = session.get(f"{URL_BASE}{endpoint}/{i}/")
-    response_id.raise_for_status()
-    data_id = response_id.json()
-    return {'name': data_id['name'], 'id': data_id['id']}
-
-def get_full_list(endpoint, id_range, max_workers=10):
-    with ThreadPoolExecutor(max_workers=max_workers) as executor:
-        return list(executor.map(lambda i: fetch_by_id(endpoint, i), id_range))
-
-def get_full_version_list():
-    return get_full_list('version', range(1, 40))
-
-def get_full_version_group_list():
-    return get_full_list('version-group', range(1, 25))
-
-def get_full_region_list():
-    return get_full_list('region', range(1, 10))
-
-def get_full_generation_list():
-    return get_full_list('generation', range(1, 9))
-
-def get_final_version_list():
-    return [
-    {'name': 'red', 'id': 1, 'generation': 1, 'region': ['kanto']},
-    {'name': 'blue', 'id': 2, 'generation': 1, 'region': ['kanto']},
-    {'name': 'yellow', 'id': 3, 'generation': 1, 'region': ['kanto']},
-    {'name': 'gold', 'id': 4, 'generation': 2, 'region': ['johto', 'kanto']},
-    {'name': 'silver', 'id': 5, 'generation': 2, 'region': ['johto', 'kanto']},
-    {'name': 'crystal', 'id': 6, 'generation': 2, 'region': ['johto', 'kanto']},
-    {'name': 'ruby', 'id': 7, 'generation': 3, 'region': ['hoenn']},
-    {'name': 'sapphire', 'id': 8, 'generation': 3, 'region': ['hoenn']},
-    {'name': 'emerald', 'id': 9, 'generation': 3, 'region': ['hoenn']},
-    {'name': 'firered', 'id': 10, 'generation': 3, 'region': ['kanto']},
-    {'name': 'leafgreen', 'id': 11, 'generation': 3, 'region': ['kanto']},
-    {'name': 'diamond', 'id': 12, 'generation': 4, 'region': ['sinnoh']},
-    {'name': 'pearl', 'id': 13, 'generation': 4, 'region': ['sinnoh']},
-    {'name': 'platinum', 'id': 14, 'generation': 4, 'region': ['sinnoh']},
-    {'name': 'heartgold', 'id': 15, 'generation': 4, 'region': ['johto', 'kanto']},
-    {'name': 'soulsilver', 'id': 16, 'generation': 4, 'region': ['johto', 'kanto']},
-    {'name': 'black', 'id': 17, 'generation': 5, 'region': ['unova']},
-    {'name': 'white', 'id': 18, 'generation': 5, 'region': ['unova']},
-    {'name': 'black-2', 'id': 19, 'generation': 5, 'region': ['unova']},
-    {'name': 'white-2', 'id': 20, 'generation': 5, 'region': ['unova']},
-    {'name': 'x', 'id': 21, 'generation': 6, 'region': ['kalos']},
-    {'name': 'y', 'id': 22, 'generation': 6, 'region': ['kalos']},
-    {'name': 'omega-ruby', 'id': 23, 'generation': 6, 'region': ['hoenn']},
-    {'name': 'alpha-sapphire', 'id': 24, 'generation': 6, 'region': ['hoenn']},
-    {'name': 'sun', 'id': 25, 'generation': 7, 'region': ['alola']},
-    {'name': 'moon', 'id': 26, 'generation': 7, 'region': ['alola']},
-    {'name': 'ultra-sun', 'id': 27, 'generation': 7, 'region': ['alola']},
-    {'name': 'ultra-moon', 'id': 28, 'generation': 7, 'region': ['alola']},
-    {'name': 'lets-go-pikachu', 'id': 29, 'generation': 7, 'region': ['kanto']},
-    {'name': 'lets-go-eevee', 'id': 30, 'generation': 7, 'region': ['kanto']},
-    {'name': 'sword', 'id': 31, 'generation': 8, 'region': ['galar']},
-    {'name': 'shield', 'id': 32, 'generation': 8, 'region': ['galar']},
-    {'name': 'brilliant-diamond', 'id': 33, 'generation': 8, 'region': ['sinnoh']},
-    {'name': 'shining-pearl', 'id': 34, 'generation': 8, 'region': ['sinnoh']},
-    {'name': 'legends-arceus', 'id': 35, 'generation': 8, 'region': ['hisui']}]
 
 if __name__ == '__main__':
     generation = [1,2,3,4,5,6,7,8]
@@ -215,7 +211,9 @@ if __name__ == '__main__':
     #print(region_list)
     #generation_list = get_full_generation_list()
     #print(generation_list)
-    final_list = get_final_version_list()
-    print(final_list)
-    kanto_list = [game['name'] for game in final_list if 'kanto' in game['region']]
+    print(FULL_LIST)
+    kanto_list = [game['name'] for game in FULL_LIST if 'kanto' in game['region']]
     print(kanto_list)
+    print(get_generation_by_game('heartgold'))
+    print(get_region_by_game('heartgold'))
+    print(get_all_games())
