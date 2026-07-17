@@ -1,5 +1,5 @@
 from flask import Flask, render_template, request, jsonify
-from data import get_all_games, get_pokemon_info_by_name, get_locations_by_region, get_areas_for_location, get_encounter_for_area, get_region_by_game
+from data import get_all_games, get_pokemon_info_by_name, get_locations_by_region, get_areas_by_location, get_encounter_by_area, get_region_by_game
 
 app = Flask(__name__)
 
@@ -62,7 +62,7 @@ def api_areas():
     if not location_number:
         return jsonify([])
 
-    areas = get_areas_for_location(location_number)
+    areas = get_areas_by_location(location_number)
     return jsonify(areas)
 
 @app.route('/api/encounters')
@@ -71,7 +71,7 @@ def api_encounters():
     if not area_number:
         return jsonify([])
 
-    encounters = get_encounter_for_area(area_number)
+    encounters = get_encounter_by_area(area_number)
     return jsonify(encounters)
 
 @app.route('/api/regions')
