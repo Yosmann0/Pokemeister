@@ -3,10 +3,6 @@ from data import get_all_games, get_pokemon_info_by_name, get_locations_by_regio
 
 app = Flask(__name__)
 
-def get_generations():
-    return [1, 2, 3, 4, 5, 6, 7, 8]
-
-
 @app.route('/')
 @app.route('/index')
 def index():
