@@ -1,6 +1,6 @@
 from flask import Flask, render_template, request, jsonify
 import requests
-from api.testing.testing import get_pokemon_info_by_name, get_locations_for_generation, get_areas_for_location, get_encounter_for_area
+from data import get_pokemon_info_by_name, get_locations_for_generation, get_areas_for_location, get_encounter_for_area
 
 app = Flask(__name__)
 
