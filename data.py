@@ -48,6 +48,11 @@ def get_generation_by_game(game_str:str):
 def get_region_by_game(game_str:str) -> List[str]:
     return next(region_list['region'] for region_list in FULL_LIST if region_list['name'] == game_str)
 
+def get_version_group_by_verison(game_str:str):
+    response_ver = session.get(f"{URL_BASE}version/{game_str}/")
+    data_ver = response_ver.json()
+    return data_ver['version_group']['name']
+
 def get_locations_by_region(region:str):
     response_gen = session.get(f"{URL_BASE}region/{region}/")
     
@@ -148,6 +153,7 @@ def get_pokemon_info_by_name(area_num:int, game_str:str, pokemon_name:str):
     
     pokemon_url_data = session.get(f"{URL_BASE}pokemon/{pokemon_name}")
     pokemon_json_data = pokemon_url_data.json()
+    version_group = get_version_group_by_verison(game_str)
     
     pokemon_dict:dict = dict(name = f"{pokemon_json_data['name']}", stats = {"HP": pokemon_json_data['stats'][0]['base_stat'], "ATK": pokemon_json_data['stats'][1]['base_stat'], "DEF": pokemon_json_data['stats'][2]['base_stat'], "SPEATK": pokemon_json_data['stats'][3]['base_stat'], "SPEDEF": pokemon_json_data['stats'][4]['base_stat'], "SPE": pokemon_json_data['stats'][5]['base_stat']})
     pokemon_dict['id'] = pokemon_json_data['id']
@@ -159,7 +165,21 @@ def get_pokemon_info_by_name(area_num:int, game_str:str, pokemon_name:str):
     pokemon_dict['weight'] = pokemon_json_data['weight']
     pokemon_dict['sprite'] = f"{pokemon_json_data['sprites']['front_default']}"
     pokemon_dict['encounters'] = get_encounter_info_by_pokemon(area_num, game_str, pokemon_name)
-
+    pokemon_dict['moves'] = [
+        {
+            'name': key['move']['name'],
+            'method': version_group_detail['move_learn_method']['name'],
+            **(
+                {'learned at': version_group_detail['level_learned_at']}
+                if version_group_detail['move_learn_method']['name'] == 'level-up'
+                else {}
+            )
+        } 
+        for key in pokemon_json_data['moves']
+        for version_group_detail in key['version_group_details']
+        if version_group_detail['version_group']['name'] == version_group
+        ]
+    pokemon_dict['moves'].sort(key=lambda x: x['method'])
     return pokemon_dict
 
 def get_pokewiki_link(item_str:str):
@@ -238,5 +258,6 @@ if __name__ == '__main__':
 
     print(get_encounter_by_area_filtered_methods(get_trailing_number(data['areas'][0]['url']), Edition, ['walk']))
 
-    print(get_pokemon_info_by_name(get_trailing_number(data['areas'][0]['url']), Edition, 'magikarp'))
-    print(get_pokewiki_link('rock smash'))
+    print(get_pokemon_info_by_name(get_trailing_number(data['areas'][2]['url']), Edition, 'mewtwo'))
+    print(get_pokewiki_link('brick-break'))
+    print(get_version_group_by_verison('x'))
