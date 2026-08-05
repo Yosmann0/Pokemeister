@@ -3,6 +3,7 @@ import json
 import re
 from typing import List
 from collections import defaultdict
+from enum import Enum
 
 URL_BASE = "https://pokeapi.co/api/v2/"
 
@@ -10,6 +11,28 @@ with open("files/game_list.json", "r") as file:
     list_data = json.load(file)
 
 FULL_LIST = list_data["list"]
+
+class EncounterMethods(Enum):
+    WALK = 'walk',
+    OLD_ROD = 'old-rod'
+    GOOD_ROD = 'good-rod'
+    SUPER_ROD = 'super-rod'
+    SURF = 'surf'
+    ROCK_SMASH = 'rock-smash'
+    HEADBUTT = 'headbutt'
+    DARK_GRASS = 'dark-grass'
+    GRASS_SPOTS = 'grass-spots'
+    CAVE_SPOTS = 'cave-spots'
+    BRIDGE_SPOTS = 'bridge-spots'
+    SUPER_ROD_SPOTS = 'super-rod-spots'
+    SURF_SPOTS = 'surf-spots'
+    YELLOW_FLOWERS = 'yellow-flowers'
+    PURPLE_FLOWERS = 'purple-flowers'
+    RED_FLOWERS = 'red-flowers'
+    ROUGH_TERRAIN = 'rough-terrain'
+    GIFT = 'gift'
+    GIFT_EGG = 'gift-egg'
+    STATIC = 'static'
 
 session = requests.Session()
 
@@ -121,7 +144,7 @@ def get_encounter_info_by_pokemon(area_num: int, game_str: str, pokemon_str: str
 
     return []
 
-def get_pokemon_info_by_name(pokemon_name:str):
+def get_pokemon_info_by_name(area_num:int, game_str:str, pokemon_name:str):
     
     pokemon_url_data = session.get(f"{URL_BASE}pokemon/{pokemon_name}")
     pokemon_json_data = pokemon_url_data.json()
@@ -135,6 +158,7 @@ def get_pokemon_info_by_name(pokemon_name:str):
     pokemon_dict['height'] = pokemon_json_data['height']
     pokemon_dict['weight'] = pokemon_json_data['weight']
     pokemon_dict['sprite'] = f"{pokemon_json_data['sprites']['front_default']}"
+    pokemon_dict['encounters'] = get_encounter_info_by_pokemon(area_num, game_str, pokemon_name)
 
     return pokemon_dict
 
@@ -214,5 +238,5 @@ if __name__ == '__main__':
 
     print(get_encounter_by_area_filtered_methods(get_trailing_number(data['areas'][0]['url']), Edition, ['walk']))
 
-    print(get_encounter_info_by_pokemon(get_trailing_number(data['areas'][0]['url']), Edition, 'magneton'))
+    print(get_pokemon_info_by_name(get_trailing_number(data['areas'][0]['url']), Edition, 'magikarp'))
     print(get_pokewiki_link('rock smash'))
