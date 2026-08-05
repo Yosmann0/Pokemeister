@@ -2,6 +2,7 @@ import requests
 import json
 import re
 from typing import List
+from collections import defaultdict
 
 URL_BASE = "https://pokeapi.co/api/v2/"
 
@@ -76,6 +77,50 @@ def get_encounter_by_area_filtered(area_num:int, game_str:str):
 
     return pokemon_list
 
+def get_encounter_by_area_filtered_methods(area_num:int, game_str:str, methods_list:list[str]):
+    
+    response_enc = session.get(f"{URL_BASE}location-area/{area_num}/")
+
+    data_enc = response_enc.json()
+
+    data_enc = data_enc['pokemon_encounters']
+    filtered_enc = [key for key in data_enc if any(version_detail['version']['name'] == game_str and any(method['method']['name'] in methods_list for method in version_detail['encounter_details']) for version_detail in key['version_details'])]
+    list_enc = [item['pokemon'] for item in filtered_enc]
+    pokemon_list = {item["name"]: get_trailing_number(item["url"]) for item in list_enc}
+    pokemon_list= [{"name": name, "id": number} for name, number in pokemon_list.items()]
+
+    return pokemon_list
+
+def get_encounter_info_by_pokemon(area_num: int, game_str: str, pokemon_str: str):
+    response = session.get(f"{URL_BASE}location-area/{area_num}/")
+    response.raise_for_status()
+
+    encounters = response.json()["pokemon_encounters"]
+
+    for encounter in encounters:
+        if encounter["pokemon"]["name"] != pokemon_str:
+            continue
+
+        for version in encounter["version_details"]:
+            if version["version"]["name"] != game_str:
+                continue
+
+            methods = defaultdict(list)
+
+            
+            for detail in version["encounter_details"]:
+                methods[detail["method"]["name"]].append(detail)
+
+            
+            return [
+                {
+                    "method": method,
+                    "chance": sum(d["chance"] for d in details),
+                    "min_level": min(d["min_level"] for d in details),
+                    "max_level": max(d["max_level"] for d in details)} for method, details in methods.items()]
+
+    return []
+
 def get_pokemon_info_by_name(pokemon_name:str):
     
     pokemon_url_data = session.get(f"{URL_BASE}pokemon/{pokemon_name}")
@@ -92,6 +137,17 @@ def get_pokemon_info_by_name(pokemon_name:str):
     pokemon_dict['sprite'] = f"{pokemon_json_data['sprites']['front_default']}"
 
     return pokemon_dict
+
+def get_pokewiki_link(item_str:str):
+    if '-' in item_str:
+        item_str = item_str.replace('-', '_')
+
+    if ' ' in item_str:
+        item_str = item_str.replace(' ', '_')
+
+    item_str = "_".join([part.capitalize() if i > 0 else part for i, part in enumerate(item_str.split("_"))])
+
+    return(f"https://www.pokewiki.de/{item_str}")
 
 if __name__ == '__main__':
     generation = [1,2,3,4,5,6,7,8]
@@ -116,7 +172,7 @@ if __name__ == '__main__':
     
     print(data['locations'][34]['name'], data['locations'][34]['url'])
     
-    response = session.get(data['locations'][34]['url'])
+    response = session.get(data['locations'][36]['url'])
     
     data = response.json()
     
@@ -128,10 +184,8 @@ if __name__ == '__main__':
     
     print(data['areas'][0]['name'], data['areas'][0]['url'])
 
-    Edition = "firered"
-    list_locations = get_encounter_by_area_filtered(get_trailing_number(data['areas'][0]['url']), Edition)
+    Edition = "leafgreen"
     
-    print(list_locations, f"Anzahl der Encounter für Edition {Edition}: {len(list_locations)}")
     
     pokemon_url_data = session.get(f"{URL_BASE}pokemon/pikachu")
     pokemon_json_data = pokemon_url_data.json()
@@ -153,3 +207,12 @@ if __name__ == '__main__':
     print(get_generation_by_game('heartgold'))
     print(get_region_by_game('heartgold'))
     print(get_all_games())
+
+    list_locations = get_encounter_by_area_filtered(get_trailing_number(data['areas'][0]['url']), Edition)
+    
+    print(list_locations, f"Anzahl der Encounter für Edition {Edition}: {len(list_locations)}")
+
+    print(get_encounter_by_area_filtered_methods(get_trailing_number(data['areas'][0]['url']), Edition, ['walk']))
+
+    print(get_encounter_info_by_pokemon(get_trailing_number(data['areas'][0]['url']), Edition, 'magneton'))
+    print(get_pokewiki_link('rock smash'))
