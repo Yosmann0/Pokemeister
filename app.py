@@ -1,24 +1,11 @@
 from typing import List
 
 from flask import Flask, render_template, request, jsonify
-from data import get_all_games, get_pokemon_info_by_name, get_locations_by_region, get_areas_by_location, get_encounter_by_area_filtered, get_region_by_game, EncounterMethods, get_encounter_by_area_filtered_methods
+from data import get_all_games, get_pokemon_info_by_name, get_locations_by_region, get_areas_by_location, get_region_by_game, EncounterMethods, get_encounter_by_area_filtered_methods
 
 app = Flask(__name__)
 
-#TODO: Delete method and use data methode instead
-def get_all_encounter_methods():
-    return [
-        "walk",
-        "surf",
-        "fish",
-        "headbutt",
-        "rock-smash",
-        "old-rod",
-        "good-rod",
-        "super-rod"
-    ]
-
-@app.route('/')
+@app.route('/') 
 @app.route('/index')
 def index():
     user = {'username': 'Nick'}
