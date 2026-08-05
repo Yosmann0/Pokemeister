@@ -275,7 +275,9 @@
     }
 
     #submit-btn:disabled {
-        opacity: 0.6;
+        background: #c7c9d4;
+        color: #8a8d9c;
+        opacity: 1;
         cursor: not-allowed;
         transform: none;
         box-shadow: none;
@@ -471,6 +473,7 @@
 
         submitWrap.style.display = 'flex';
         submitBtn.style.display = 'inline-block';
+        submitBtn.disabled = encounters.length === 0;
     }
 
     gameSelect.addEventListener('change', async () => {
