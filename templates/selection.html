@@ -70,7 +70,7 @@
         justify-content: center;
     }
 
-    .field label {
+    .field-header label {
         font-size: 0.85rem;
         font-weight: 700;
         text-transform: uppercase;
@@ -158,6 +158,89 @@
         font-size: 0.85rem;
     }
 
+    /* Side-by-Side Flex Layout Container */
+    .fields-row {
+        display: flex;
+        gap: 16px;
+        align-items: stretch;
+    }
+
+    .fields-row .field {
+        flex: 1;
+        min-width: 0;
+        margin: 0;
+    }
+
+    /* Checkbox Group Styles */
+    .checkbox-group {
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+        max-height: 220px;
+        overflow-y: auto;
+        padding-right: 4px;
+    }
+
+    .checkbox-label {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        padding: 8px 12px;
+        border-radius: 8px;
+        background: #f7f8fc;
+        border: 1px solid #e1e3ea;
+        cursor: pointer;
+        transition: background 0.15s ease, border-color 0.15s ease;
+        font-size: 0.88rem;
+        color: #2b2b33;
+        user-select: none;
+    }
+
+    .checkbox-label:hover {
+        background: #eef0fb;
+        border-color: #5a6bc4;
+    }
+
+    .checkbox-label input[type="checkbox"] {
+        appearance: none;
+        -webkit-appearance: none;
+        width: 16px;
+        height: 16px;
+        border: 2px solid #5a6bc4;
+        border-radius: 4px;
+        outline: none;
+        cursor: pointer;
+        display: grid;
+        place-content: center;
+        transition: background 0.15s ease;
+    }
+
+    .checkbox-label input[type="checkbox"]::before {
+        content: "";
+        width: 8px;
+        height: 8px;
+        transform: scale(0);
+        transition: 120ms transform ease-in-out;
+        box-shadow: inset 1em 1em #fff;
+        transform-origin: bottom left;
+        clip-path: polygon(14% 44%, 0 65%, 50% 100%, 100% 16%, 80% 0%, 43% 62%);
+    }
+
+    .checkbox-label input[type="checkbox"]:checked {
+        background-color: #5a6bc4;
+    }
+
+    .checkbox-label input[type="checkbox"]:checked::before {
+        transform: scale(1);
+    }
+
+    /* Stack on smaller mobile screens */
+    @media (max-width: 580px) {
+        .fields-row {
+            flex-direction: column;
+        }
+    }
+
     .submit-wrap {
         display: flex;
         justify-content: center;
@@ -192,7 +275,9 @@
     }
 
     #submit-btn:disabled {
-        opacity: 0.6;
+        background: #c7c9d4;
+        color: #8a8d9c;
+        opacity: 1;
         cursor: not-allowed;
         transform: none;
         box-shadow: none;
@@ -250,13 +335,31 @@
             </select>
         </div>
 
-        <div class="field" id="pokemon-area-field" style="display:none;">
-            <div class="field-header">
-                <span class="step-badge">5</span>
-                <label>Available Pokémon in this Area</label>
-                <span class="spinner" id="pokemon-spinner"></span>
+        <!-- Wrapped Step 5 & 6 inside side-by-side flex row -->
+        <div class="fields-row" id="pokemon-encounter-row" style="display:none;">
+            <div class="field" id="pokemon-area-field">
+                <div class="field-header">
+                    <span class="step-badge">5</span>
+                    <label>Available Pokémon</label>
+                    <span class="spinner" id="pokemon-spinner"></span>
+                </div>
+                <ul id="pokemon-list"></ul>
             </div>
-            <ul id="pokemon-list"></ul>
+
+            <div class="field" id="encounter-method-field">
+                <div class="field-header">
+                    <span class="step-badge">6</span>
+                    <label>Select Encounter Method</label>
+                </div>
+                <div class="checkbox-group" id="encounter-method-list">
+                    {% for encounter_method in encounter_methods %}
+                        <label class="checkbox-label">
+                            <input type="checkbox" name="encounter-method.name" value="{{ encounter_method.value }}" checked>
+                            <span>{{ encounter_method.name }}</span>
+                        </label>
+                    {% endfor %}
+                </div>
+            </div>
         </div>
 
         <div class="submit-wrap" id="submit-wrap" style="display:none;">
@@ -278,14 +381,14 @@
     const areaField = document.getElementById('area-field');
     const areaSelect = document.getElementById('area');
     const areaSpinner = document.getElementById('area-spinner');
-    const pokemonAreaField = document.getElementById('pokemon-area-field');
+
+    const pokemonEncounterRow = document.getElementById('pokemon-encounter-row');
     const pokemonList = document.getElementById('pokemon-list');
     const pokemonSpinner = document.getElementById('pokemon-spinner');
+    const encounterMethodList = document.getElementById('encounter-method-list');
     const submitWrap = document.getElementById('submit-wrap');
     const submitBtn = document.getElementById('submit-btn');
 
-    // keep the last fetched encounter list around so the click handler
-    // can pick a random one without asking the server again
     let currentEncounters = [];
 
     function formatLabel(text) {
@@ -294,43 +397,42 @@
             .replace(/\b\w/g, (char) => char.toUpperCase());
     }
 
-    // Format the game names that were rendered by Jinja
+    function formatCheckboxLabel(text) {
+        return text
+            .toLowerCase()
+            .replace(/_/g, ' ')
+            .replace(/\b\w/g, (char) => char.toUpperCase());
+    }
 
-    document.querySelectorAll('#game option').forEach((option) => {
-
-        if (option.value) {          // Skip the "-- choose --" option
-
-            option.textContent = formatLabel(option.textContent);
-
+    document.querySelectorAll('#encounter-method-list span').forEach((span) => {
+        if (span.textContent) {
+            span.textContent = formatCheckboxLabel(span.textContent);
         }
-
     });
 
-    // fill a <select> with the list of options from the api
+    document.querySelectorAll('#game option').forEach((option) => {
+        if (option.value) {
+            option.textContent = formatLabel(option.textContent);
+        }
+    });
+
     function fillSelect(selectElement, options) {
         selectElement.innerHTML = '<option value="" selected disabled>-- choose --</option>';
-
         options.forEach((option) => {
             const optionElement = document.createElement('option');
-
             if (typeof option === "string") {
-                // List of strings
                 optionElement.value = option;
                 optionElement.textContent = formatLabel(option);
             } else {
-                // List of objects with id and name
                 optionElement.value = option.id;
                 optionElement.textContent = formatLabel(option.name);
             }
-
             selectElement.appendChild(optionElement);
         });
     }
 
-    // fill a plain list (e.g. <ul>) with just the names, no selection involved
     function fillList(listElement, options) {
         listElement.innerHTML = '';
-
         options.forEach((option) => {
             const itemElement = document.createElement('li');
             itemElement.textContent = formatLabel(option.name);
@@ -338,13 +440,48 @@
         });
     }
 
+    // Reads which encounter-method checkboxes are currently checked
+    function getSelectedEncounterMethods() {
+        return Array.from(
+            encounterMethodList.querySelectorAll('input[type="checkbox"]:checked')
+        ).map((input) => input.value);
+    }
+
+    // Fetches encounters for the currently selected area/game, filtered
+    // by whichever encounter methods are checked
+    async function loadEncounters() {
+        const area = areaSelect.value;
+        if (!area) return;
+
+        pokemonList.innerHTML = '';
+        pokemonSpinner.classList.add('active');
+        submitWrap.style.display = 'none';
+        submitBtn.style.display = 'none';
+
+        const game = gameSelect.value;
+        const methods = getSelectedEncounterMethods();
+
+        const params = new URLSearchParams({ area, game });
+        methods.forEach((method) => params.append('method', method));
+
+        const response = await fetch(`/api/encounters?${params.toString()}`);
+        const encounters = await response.json();
+
+        currentEncounters = encounters;
+        fillList(pokemonList, encounters);
+        pokemonSpinner.classList.remove('active');
+
+        submitWrap.style.display = 'flex';
+        submitBtn.style.display = 'inline-block';
+        submitBtn.disabled = encounters.length === 0;
+    }
+
     gameSelect.addEventListener('change', async () => {
         const game = gameSelect.value;
-        if (!game) {
-            return;
-        }
+        if (!game) return;
+
         areaField.style.display = 'none';
-        pokemonAreaField.style.display = 'none';
+        pokemonEncounterRow.style.display = 'none';
         submitWrap.style.display = 'none';
         submitBtn.style.display = 'none';
         currentEncounters = [];
@@ -363,12 +500,10 @@
 
     regionSelect.addEventListener('change', async () => {
         const region = regionSelect.value;
-        if (!region) {
-            return;
-        }
+        if (!region) return;
 
         areaField.style.display = 'none';
-        pokemonAreaField.style.display = 'none';
+        pokemonEncounterRow.style.display = 'none';
         submitWrap.style.display = 'none';
         submitBtn.style.display = 'none';
         currentEncounters = [];
@@ -387,11 +522,9 @@
 
     locationSelect.addEventListener('change', async () => {
         const location = locationSelect.value;
-        if (!location) {
-            return;
-        }
+        if (!location) return;
 
-        pokemonAreaField.style.display = 'none';
+        pokemonEncounterRow.style.display = 'none';
         submitWrap.style.display = 'none';
         submitBtn.style.display = 'none';
         currentEncounters = [];
@@ -409,35 +542,21 @@
     });
 
     areaSelect.addEventListener('change', async () => {
-        const area = areaSelect.value;
-        if (!area) {
-            return;
+        if (!areaSelect.value) return;
+
+        pokemonEncounterRow.style.display = 'flex';
+        await loadEncounters();
+    });
+
+    // Re-fetch encounters whenever an encounter-method checkbox is toggled
+    encounterMethodList.addEventListener('change', (event) => {
+        if (event.target.matches('input[type="checkbox"]')) {
+            loadEncounters();
         }
-
-        pokemonAreaField.style.display = 'block';
-        pokemonList.innerHTML = '';
-        pokemonSpinner.classList.add('active');
-        submitWrap.style.display = 'none';
-        submitBtn.style.display = 'none';
-        const game = gameSelect.value;
-
-        const response = await fetch(`/api/encounters?area=${encodeURIComponent(area)}&game=${encodeURIComponent(game)}`);
-        const encounters = await response.json();
-
-        currentEncounters = encounters; // keep for the click handler
-        fillList(pokemonList, encounters);
-        pokemonSpinner.classList.remove('active');
-
-        // area is now the last real selection, so the button
-        // becomes available as soon as it's chosen
-        submitWrap.style.display = 'flex';
-        submitBtn.style.display = 'inline-block';
     });
 
     submitBtn.addEventListener('click', () => {
-        if (currentEncounters.length === 0) {
-            return;
-        }
+        if (currentEncounters.length === 0) return;
 
         submitBtn.disabled = true;
         submitBtn.textContent = 'Loading...';
@@ -448,7 +567,8 @@
             game: gameSelect.selectedOptions[0].text,
             region: regionSelect.selectedOptions[0].text,
             location: locationSelect.selectedOptions[0].text,
-            area: areaSelect.selectedOptions[0].text,
+            area_name: areaSelect.selectedOptions[0].text,
+            area_number: areaSelect.selectedOptions[0].value,
             pokemon_name: random.name
         });
 

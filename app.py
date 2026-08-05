@@ -1,7 +1,22 @@
+from typing import List
+
 from flask import Flask, render_template, request, jsonify
-from data import get_all_games, get_pokemon_info_by_name, get_locations_by_region, get_areas_by_location, get_encounter_by_area_filtered, get_region_by_game
+from data import get_all_games, get_pokemon_info_by_name, get_locations_by_region, get_areas_by_location, get_encounter_by_area_filtered, get_region_by_game, EncounterMethods, get_encounter_by_area_filtered_methods
 
 app = Flask(__name__)
+
+#TODO: Delete method and use data methode instead
+def get_all_encounter_methods():
+    return [
+        "walk",
+        "surf",
+        "fish",
+        "headbutt",
+        "rock-smash",
+        "old-rod",
+        "good-rod",
+        "super-rod"
+    ]
 
 @app.route('/')
 @app.route('/index')
@@ -17,7 +32,8 @@ def index():
 @app.route('/selection')
 def selection():
     games = get_all_games()
-    return render_template('selection.html', games=games)
+    encounter_methods = EncounterMethods
+    return render_template('selection.html', games=games, encounter_methods=encounter_methods)
 
 
 @app.route('/result')
@@ -25,17 +41,19 @@ def result():
     game = request.args.get('game')
     region = request.args.get('region')
     location = request.args.get('location')
-    area = request.args.get('area')
+    area_name = request.args.get('area_name')
+    area_number = request.args.get('area_number', type=int)
     pokemon_name = request.args.get('pokemon_name')
 
-    pokemon_data = get_pokemon_info_by_name(pokemon_name)
+    pokemon_data = get_pokemon_info_by_name(pokemon_name = pokemon_name, area_num=area_number, game_str=game)
 
     return render_template(
         'result.html',
         game=game,
         region=region,
         location=location,
-        area=area,
+        area_name=area_name,
+        area_number=area_number,
         pokemon_data=pokemon_data
     )
 
@@ -65,10 +83,11 @@ def api_areas():
 def api_encounters():
     area_number = request.args.get('area', type=int)
     game_str = request.args.get('game', type=str)
+    encounter_methods = request.args.getlist('method')
     if not area_number:
         return jsonify([])
 
-    encounters = get_encounter_by_area_filtered(area_number, game_str)
+    encounters = get_encounter_by_area_filtered_methods(area_number, game_str, encounter_methods)
     return jsonify(encounters)
 
 @app.route('/api/regions')
