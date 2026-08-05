@@ -1,4 +1,5 @@
 from typing import List
+from urllib.parse import urlencode
 
 from flask import Flask, render_template, request, jsonify
 from data import get_all_games, get_pokemon_info_by_name, get_locations_by_region, get_areas_by_location, get_region_by_game, EncounterMethods, get_encounter_by_area_filtered_methods
@@ -25,23 +26,41 @@ def selection():
 
 @app.route('/result')
 def result():
+    # Raw values -- these are exactly what the /api/* endpoints expect,
+    # and what we hand back to /selection so it can restore the choice.
     game = request.args.get('game')
     region = request.args.get('region')
     location = request.args.get('location')
-    area_name = request.args.get('area_name')
     area_number = request.args.get('area_number', type=int)
+    methods = request.args.getlist('method')
+
+    # Display-only text -- only used to render the summary chips on this page.
+    region_name = request.args.get('region_name')
+    location_name = request.args.get('location_name')
+    area_name = request.args.get('area_name')
     pokemon_name = request.args.get('pokemon_name')
 
-    pokemon_data = get_pokemon_info_by_name(pokemon_name = pokemon_name, area_num=area_number, game_str=game)
+    pokemon_data = get_pokemon_info_by_name(game_str = game, pokemon_name = pokemon_name, area_num = area_number)
+
+    # Build the query string for "Back to selection" so the raw
+    # game/region/location/area/method choices can be replayed there.
+    back_query_params = [
+        ('game', game),
+        ('region', region),
+        ('location', location),
+        ('area_number', area_number),
+    ]
+    back_query_params += [('method', m) for m in methods]
+    back_query = urlencode(back_query_params)
 
     return render_template(
         'result.html',
         game=game,
-        region=region,
-        location=location,
+        region_name=region_name,
+        location_name=location_name,
         area_name=area_name,
-        area_number=area_number,
-        pokemon_data=pokemon_data
+        pokemon_data=pokemon_data,
+        back_query=back_query
     )
 
 
@@ -68,13 +87,13 @@ def api_areas():
 
 @app.route('/api/encounters')
 def api_encounters():
-    area_number = request.args.get('area', type=int)
+    area = request.args.get('area', type=int)
     game_str = request.args.get('game', type=str)
     encounter_methods = request.args.getlist('method')
-    if not area_number:
+    if not area:
         return jsonify([])
 
-    encounters = get_encounter_by_area_filtered_methods(area_number, game_str, encounter_methods)
+    encounters = get_encounter_by_area_filtered_methods(area, game_str, encounter_methods)
     return jsonify(encounters)
 
 @app.route('/api/regions')

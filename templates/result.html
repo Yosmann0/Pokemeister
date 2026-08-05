@@ -302,8 +302,8 @@
 
 <div class="selection-summary">
         <span>Game: <strong>{{ game | replace('-', ' ') | title }}</strong></span>
-        <span>Region: <strong>{{ region | replace('-', ' ') | title }}</strong></span>
-        <span>Location: <strong>{{ location | replace('-', ' ') | title }}</strong></span>
+        <span>Region: <strong>{{ region_name | replace('-', ' ') | title }}</strong></span>
+        <span>Location: <strong>{{ location_name | replace('-', ' ') | title }}</strong></span>
         <span>Area: <strong>{{ area_name | replace('-', ' ') | title }}</strong></span>
     </div>
 
@@ -382,7 +382,7 @@
     {% endif %}
 
     <div class="back-link-wrap">
-        <a class="back-link" href="/selection">&larr; Back to selection</a>
+        <a class="back-link" href="/selection?{{ back_query }}">&larr; Back to selection</a>
     </div>
 </div>
 
