@@ -13,7 +13,7 @@ with open("files/game_list.json", "r") as file:
 FULL_LIST = list_data["list"]
 
 class EncounterMethods(Enum):
-    WALK = 'walk',
+    WALK = 'walk'
     OLD_ROD = 'old-rod'
     GOOD_ROD = 'good-rod'
     SUPER_ROD = 'super-rod'
