@@ -5,6 +5,7 @@ from typing import List
 from collections import defaultdict
 from enum import Enum
 from functools import lru_cache
+from concurrent.futures import ThreadPoolExecutor
 
 URL_BASE = "https://pokeapi.co/api/v2/"
 
@@ -205,6 +206,16 @@ def get_pokemon_info_by_name(area_num:int, game_str:str, pokemon_name:str):
     pokemon_dict['weight'] = pokemon_json_data['weight']
     pokemon_dict['sprite'] = f"{pokemon_json_data['sprites']['front_default']}"
     pokemon_dict['encounters'] = get_encounter_info_by_pokemon(area_num, game_str, pokemon_name)
+    move_names = {
+        m['move']['name']
+        for m in pokemon_json_data['moves']
+        if any(d['version_group']['name'] == version_group
+            for d in m['version_group_details'])
+    }
+
+    with ThreadPoolExecutor(max_workers=10) as pool:
+        list(pool.map(lambda name: get_move_info(name, version_group_id), move_names))
+    
     pokemon_dict['moves'] = [
         {
             **get_move_info(key['move']['name'], version_group_id),
