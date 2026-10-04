@@ -578,6 +578,13 @@
             pokemon_name: random.name
         });
 
+        if (random.min_level != null) {
+            params.set('min_level', String(random.min_level));
+        }
+        if (random.max_level != null) {
+            params.set('max_level', String(random.max_level));
+        }
+
         methods.forEach((method) => params.append('method', method));
 
         window.location.href = `/result?${params.toString()}`;

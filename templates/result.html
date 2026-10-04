@@ -352,6 +352,9 @@
         <span>Region: <strong>{{ region_name | replace('-', ' ') | title }}</strong></span>
         <span>Location: <strong>{{ location_name | replace('-', ' ') | title }}</strong></span>
         <span>Area: <strong>{{ area_name | replace('-', ' ') | title }}</strong></span>
+        {% if min_level is not none and max_level is not none %}
+            <span>Level: <strong>{{ min_level }} - {{ max_level }}</strong></span>
+        {% endif %}
     </div>
 
     {% if pokemon_data %}

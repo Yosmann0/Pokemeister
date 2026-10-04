@@ -145,7 +145,9 @@ def get_encounter_info_by_pokemon(area_num: int, game_str: str, pokemon_str: str
                     "method": method,
                     "chance": sum(d["chance"] for d in details),
                     "min_level": min(d["min_level"] for d in details),
-                    "max_level": max(d["max_level"] for d in details)} for method, details in methods.items()]
+                    "max_level": max(d["max_level"] for d in details)
+                } for method, details in methods.items()
+            ]
 
     return []
 

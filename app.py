@@ -2,7 +2,16 @@ from typing import List
 from urllib.parse import urlencode
 
 from flask import Flask, render_template, request, jsonify
-from data import get_all_games, get_pokemon_info_by_name, get_locations_by_region, get_areas_by_location, get_region_by_game, EncounterMethods, get_encounter_by_area_filtered_methods
+from data import (
+    get_all_games,
+    get_pokemon_info_by_name,
+    get_locations_by_region,
+    get_areas_by_location,
+    get_region_by_game,
+    EncounterMethods,
+    get_encounter_by_area_filtered_methods,
+    get_encounter_info_by_pokemon,
+)
 
 app = Flask(__name__)
 
@@ -42,6 +51,8 @@ def result():
     location = request.args.get('location')
     area_number = request.args.get('area_number', type=int)
     methods = request.args.getlist('method')
+    min_level = request.args.get('min_level', type=int)
+    max_level = request.args.get('max_level', type=int)
 
     # Display-only text -- only used to render the summary chips on this page.
     region_name = request.args.get('region_name')
@@ -50,6 +61,17 @@ def result():
     pokemon_name = request.args.get('pokemon_name')
 
     pokemon_data = get_pokemon_info_by_name(game_str = game, pokemon_name = pokemon_name, area_num = area_number)
+
+    if min_level is None or max_level is None:
+        encounter_levels = [
+            level
+            for encounter in pokemon_data.get('encounters', [])
+            for level in [encounter.get('min_level'), encounter.get('max_level')]
+            if level is not None
+        ]
+        if encounter_levels:
+            min_level = min(encounter_levels)
+            max_level = max(encounter_levels)
 
     # Build the query string for "Back to selection" so the raw
     # game/region/location/area/method choices can be replayed there.
@@ -69,6 +91,8 @@ def result():
         location_name=location_name,
         area_name=area_name,
         pokemon_data=pokemon_data,
+        min_level=min_level,
+        max_level=max_level,
         back_query=back_query
     )
 
@@ -103,6 +127,22 @@ def api_encounters():
         return jsonify([])
 
     encounters = get_encounter_by_area_filtered_methods(area, game_str, encounter_methods)
+
+    for encounter in encounters:
+        details = get_encounter_info_by_pokemon(area, game_str, encounter['name'])
+        levels = [
+            level
+            for info in details
+            for level in [info.get('min_level'), info.get('max_level')]
+            if level is not None
+        ]
+        if levels:
+            encounter['min_level'] = min(levels)
+            encounter['max_level'] = max(levels)
+        else:
+            encounter['min_level'] = None
+            encounter['max_level'] = None
+
     return jsonify(encounters)
 
 @app.route('/api/regions')
