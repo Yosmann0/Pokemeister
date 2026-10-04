@@ -4,6 +4,7 @@ import re
 from typing import List
 from collections import defaultdict
 from enum import Enum
+from functools import lru_cache
 
 URL_BASE = "https://pokeapi.co/api/v2/"
 
@@ -152,6 +153,19 @@ def get_encounter_info_by_pokemon(area_num: int, game_str: str, pokemon_str: str
 
     return []
 
+@lru_cache(maxsize=None)
+def get_move_info(move_str:str):
+    move_json = session.get(f"{URL_BASE}move/{move_str}/").json()
+    move_dict = {
+        'name': move_json['name'],
+        'accuracy': move_json['accuracy'],
+        'power': move_json['power'],
+        'pp': move_json['pp'],
+        'priority': move_json['priority'],
+        'category': move_json['damage_class']['name'],
+        'type': move_json['type']['name']}
+    return move_dict
+
 def get_pokemon_info_by_name(area_num:int, game_str:str, pokemon_name:str):
     
     pokemon_url_data = session.get(f"{URL_BASE}pokemon/{pokemon_name}")
@@ -170,13 +184,16 @@ def get_pokemon_info_by_name(area_num:int, game_str:str, pokemon_name:str):
     pokemon_dict['encounters'] = get_encounter_info_by_pokemon(area_num, game_str, pokemon_name)
     pokemon_dict['moves'] = [
         {
-            'name': key['move']['name'],
+            **get_move_info(key['move']['name']),
+            'link': get_pokewiki_link(key['move']['name']),
             'method': version_group_detail['move_learn_method']['name'],
             **(
                 {'learned_at': version_group_detail['level_learned_at']}
                 if version_group_detail['move_learn_method']['name'] == 'level-up'
                 else {}
-            )
+                )
+            
+
         } 
         for key in pokemon_json_data['moves']
         for version_group_detail in key['version_group_details']
@@ -264,3 +281,4 @@ if __name__ == '__main__':
     print(get_pokemon_info_by_name(get_trailing_number(data['areas'][2]['url']), Edition, 'mewtwo'))
     print(get_pokewiki_link('brick-break'))
     print(get_version_group_by_verison('x'))
+    print(get_move_info('fire-punch'))
