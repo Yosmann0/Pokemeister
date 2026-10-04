@@ -170,7 +170,7 @@ def get_pokemon_info_by_name(area_num:int, game_str:str, pokemon_name:str):
             'name': key['move']['name'],
             'method': version_group_detail['move_learn_method']['name'],
             **(
-                {'learned at': version_group_detail['level_learned_at']}
+                {'learned_at': version_group_detail['level_learned_at']}
                 if version_group_detail['move_learn_method']['name'] == 'level-up'
                 else {}
             )

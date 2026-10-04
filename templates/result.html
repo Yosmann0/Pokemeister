@@ -255,11 +255,58 @@
         border-top: 1px dashed #ececf4;
         font-size: 0.85rem;
         color: #6b6f80;
+        margin-bottom: 28px;
     }
 
     .stat-total strong {
         font-size: 1rem;
         color: #2b2b33;
+    }
+
+    .move-grid {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 16px;
+        margin-top: 12px;
+    }
+
+    .move-table-wrap {
+        background: #f7f8fc;
+        border: 1px solid #ececf4;
+        border-radius: 12px;
+        padding: 12px;
+        overflow: hidden;
+    }
+
+    .move-table {
+        width: 100%;
+        border-collapse: collapse;
+        font-size: 0.8rem;
+    }
+
+    .move-table th,
+    .move-table td {
+        padding: 8px 10px;
+        text-align: left;
+        border-bottom: 1px solid #e7e9f1;
+        vertical-align: top;
+    }
+
+    .move-table th {
+        font-size: 0.72rem;
+        letter-spacing: 0.5px;
+        text-transform: uppercase;
+        color: #6b6f80;
+    }
+
+    .move-table tr:last-child td {
+        border-bottom: none;
+    }
+
+    @media (max-width: 640px) {
+        .move-grid {
+            grid-template-columns: 1fr;
+        }
     }
 
     .empty-state {
@@ -373,6 +420,46 @@
                         <strong>{{ pokemon_data.stats.BST }}</strong>
                     </div>
                 {% endif %}
+                <h3 class="section-title">Moves</h3>
+                <div class="move-grid">
+                    <div class="move-table-wrap">
+                        <table class="move-table">
+                            <h3 class="section-title">Level-Up Moves</h3>
+                            <thead>
+                                <tr>
+                                    <th>Move</th>
+                                    <th>Learned At</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for move in pokemon_data.moves | selectattr('method', 'equalto', 'level-up') | sort(attribute='learned_at') %}
+                                <tr>
+                                    <td>{{ move.name | format_name }}</td>
+                                    <td>{{ move.learned_at }}</td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <div class="move-table-wrap">
+                        <table class="move-table">
+                            <h3 class="section-title">TM Moves</h3>
+                            <thead>
+                                <tr>
+                                    <th>Move</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for move in pokemon_data.moves | selectattr('method', 'equalto', 'machine') | sort(attribute='name') %}
+                                <tr>
+                                    <td>{{ move.name | format_name }}</td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
             </div>
         </div>
     {% else %}

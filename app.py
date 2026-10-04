@@ -6,6 +6,15 @@ from data import get_all_games, get_pokemon_info_by_name, get_locations_by_regio
 
 app = Flask(__name__)
 
+
+def format_name(value):
+    if value is None:
+        return ""
+    return " ".join(part.capitalize() for part in str(value).replace('-', ' ').split())
+
+
+app.jinja_env.filters['format_name'] = format_name
+
 @app.route('/') 
 @app.route('/index')
 def index():
