@@ -33,6 +33,7 @@ class EncounterMethods(Enum):
     GIFT = 'gift'
     GIFT_EGG = 'gift-egg'
     STATIC = 'static'
+    POKEFLUTE = 'pokeflute'
 
 session = requests.Session()
 
