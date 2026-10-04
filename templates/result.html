@@ -4,7 +4,7 @@
 
 <style>
     .page-wrap {
-        max-width: 720px;
+        max-width: 980px; 
         margin: 0 auto;
         padding: 24px 16px 60px;
         font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
@@ -32,7 +32,7 @@
         border-radius: 999px;
         padding: 4px 12px;
         font-size: 0.8rem;
-        color: #565a6e;
+        color: #565a6e; 
     }
 
     .selection-summary strong {
@@ -266,7 +266,7 @@
     .move-grid {
         display: grid;
         grid-template-columns: repeat(2, minmax(0, 1fr));
-        gap: 16px;
+        gap: 12px;
         margin-top: 12px;
     }
 
@@ -274,29 +274,114 @@
         background: #f7f8fc;
         border: 1px solid #ececf4;
         border-radius: 12px;
-        padding: 12px;
+        padding: 10px;
         overflow: hidden;
     }
 
     .move-table {
         width: 100%;
         border-collapse: collapse;
-        font-size: 0.8rem;
+        font-size: 0.72rem;
+        table-layout: fixed;
     }
 
     .move-table th,
     .move-table td {
-        padding: 8px 10px;
-        text-align: left;
+        padding: 6px 6px;
+        text-align: center;
         border-bottom: 1px solid #e7e9f1;
-        vertical-align: top;
+        vertical-align: middle;
+        word-break: break-word;
     }
 
     .move-table th {
-        font-size: 0.72rem;
-        letter-spacing: 0.5px;
+        font-size: 0.64rem;
+        letter-spacing: 0.4px;
         text-transform: uppercase;
         color: #6b6f80;
+        padding-right: 2px;
+        padding-left: 2px;
+        white-space: nowrap;
+        word-break: normal;
+    }
+
+    .move-table th:first-child,
+    .move-table td:first-child {
+        width: 8%;
+    }
+
+    .move-table th:nth-child(2),
+    .move-table td:nth-child(2) {
+        width: 44%;
+    }
+
+    .move-table th:nth-child(3),
+    .move-table td:nth-child(3),
+    .move-table th:nth-child(4),
+    .move-table td:nth-child(4) {
+        width: 10%;
+    }
+
+    .move-table th:nth-child(5),
+    .move-table td:nth-child(5) {
+        width: 8%;
+    }
+
+    .move-table th:nth-child(6),
+    .move-table td:nth-child(6) {
+        width: 12%;
+        white-space: nowrap;
+        word-break: normal;
+    }
+
+    .move-table th:last-child,
+    .move-table td:last-child {
+        width: 8%;
+    }
+
+    .move-table--other th:first-child,
+    .move-table--other td:first-child {
+        width: 12%;
+    }
+
+    .move-table--other th:nth-child(2),
+    .move-table--other td:nth-child(2) {
+        width: 40%;
+    }
+
+    .move-table td:nth-child(3),
+    .move-table td:nth-child(4),
+    .move-table td:nth-child(5),
+    .move-table td:nth-child(6),
+    .move-table td:nth-child(7) {
+        text-align: center;
+    }
+
+    .type-badge-tiny {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        width: 18px;
+        height: 18px;
+    }
+
+    .type-badge-tiny img {
+        width: 100%;
+        height: 100%;
+        object-fit: contain;
+        display: block;
+    }
+
+    .move-table td:nth-child(6) {
+        font-size: 0.65rem;
+    }
+
+    .move-category-icon {
+        display: block;
+        width: 32px;
+        height: 17px;
+        object-fit: contain;
+        margin: 0 auto;
     }
 
     .move-table tr:last-child td {
@@ -343,15 +428,41 @@
     "rock": "#B6A136", "ghost": "#735797", "dragon": "#6F35FC", "dark": "#705746",
     "steel": "#B7B7CE", "fairy": "#D685AD"
 } %}
+{% set type_icon_map = {
+    'normal': url_for('static', filename='type-icons/Normal_icon_SwSh.png'),
+    'fire': url_for('static', filename='type-icons/Fire_icon_SwSh.png'),
+    'water': url_for('static', filename='type-icons/Water_icon_SwSh.png'),
+    'electric': url_for('static', filename='type-icons/Electric_icon_SwSh.png'),
+    'grass': url_for('static', filename='type-icons/Grass_icon_SwSh.png'),
+    'ice': url_for('static', filename='type-icons/Ice_icon_SwSh.png'),
+    'fighting': url_for('static', filename='type-icons/Fighting_icon_SwSh.png'),
+    'poison': url_for('static', filename='type-icons/Poison_icon_SwSh.png'),
+    'ground': url_for('static', filename='type-icons/Ground_icon_SwSh.png'),
+    'flying': url_for('static', filename='type-icons/Flying_icon_SwSh.png'),
+    'psychic': url_for('static', filename='type-icons/Psychic_icon_SwSh.png'),
+    'bug': url_for('static', filename='type-icons/Bug_icon_SwSh.png'),
+    'rock': url_for('static', filename='type-icons/Rock_icon_SwSh.png'),
+    'ghost': url_for('static', filename='type-icons/Ghost_icon_SwSh.png'),
+    'dragon': url_for('static', filename='type-icons/Dragon_icon_SwSh.png'),
+    'dark': url_for('static', filename='type-icons/Dark_icon_SwSh.png'),
+    'steel': url_for('static', filename='type-icons/Steel_icon_SwSh.png'),
+    'fairy': url_for('static', filename='type-icons/Fairy_icon_SwSh.png')
+} %}
+{% set category_icon_map = {
+    'physical': url_for('static', filename='move-categories/PhysicalIC_LGPE.png'),
+    'special': url_for('static', filename='move-categories/SpecialIC_LGPE.png'),
+    'status': url_for('static', filename='move-categories/StatusIC_LGPE.png')
+} %}
+{% set category_labels = {"physical": "Phys", "special": "Spec", "status": "Status"} %}
 
 <div class="page-wrap">
     <h1 class="page-title">Result</h1>
 
 <div class="selection-summary">
-        <span>Game: <strong>{{ game | replace('-', ' ') | title }}</strong></span>
-        <span>Region: <strong>{{ region_name | replace('-', ' ') | title }}</strong></span>
-        <span>Location: <strong>{{ location_name | replace('-', ' ') | title }}</strong></span>
-        <span>Area: <strong>{{ area_name | replace('-', ' ') | title }}</strong></span>
+        <span>Game: <strong>{{ (game | replace('-', ' ') | title) if game is not none else '-' }}</strong></span>
+        <span>Region: <strong>{{ (region_name | replace('-', ' ') | title) if region_name is not none else '-' }}</strong></span>
+        <span>Location: <strong>{{ (location_name | replace('-', ' ') | title) if location_name is not none else '-' }}</strong></span>
+        <span>Area: <strong>{{ (area_name | replace('-', ' ') | title) if area_name is not none else '-' }}</strong></span>
         {% if min_level is not none and max_level is not none %}
             <span>Level: <strong>{{ min_level }} - {{ max_level }}</strong></span>
         {% endif %}
@@ -387,15 +498,15 @@
                 <div class="quick-stats">
                     <div class="quick-stat">
                         <span class="label">Height</span>
-                        <span class="value">{{ pokemon_data.height / 10 }} m</span>
+                        <span class="value">{{ (pokemon_data.height / 10) if pokemon_data.height is not none else '-' }} m</span>
                     </div>
                     <div class="quick-stat">
                         <span class="label">Weight</span>
-                        <span class="value">{{ pokemon_data.weight / 10 }} kg</span>
+                        <span class="value">{{ (pokemon_data.weight / 10) if pokemon_data.weight is not none else '-' }} kg</span>
                     </div>
                     <div class="quick-stat">
-                        <span class="label">Dex No.</span>
-                        <span class="value">{{ pokemon_data.id }}</span>
+                        <span class="label">Dex</span>
+                        <span class="value">{{ pokemon_data.id if pokemon_data.id is not none else '-' }}</span>
                     </div>
                 </div>
 
@@ -410,35 +521,64 @@
                             <div class="stat-row">
                                 <span class="stat-name">{{ stat_labels.get(stat_key, stat_key) }}</span>
                                 <div class="bar-track">
-                                    <div class="bar-fill" style="width: {{ (stat_value / 255 * 100) | round(1) }}%;"></div>
+                                    <div class="bar-fill" style="width: {{ ((stat_value / 255 * 100) if stat_value is not none else 0) | round(1) }}%;"></div>
                                 </div>
-                                <span class="stat-value">{{ stat_value }}</span>
+                                <span class="stat-value">{{ stat_value if stat_value is not none else '-' }}</span>
                             </div>
                         {% endif %}
                     {% endfor %}
                 </div>
-                {% if pokemon_data.stats.BST %}
+                {% if pokemon_data.stats.BST is not none %}
                     <div class="stat-total">
-                        <span>Base Stat Total</span>
+                        <span>BST</span>
                         <strong>{{ pokemon_data.stats.BST }}</strong>
                     </div>
                 {% endif %}
-                <h3 class="section-title">Moves</h3>
+                <h3 class="section-title">Moves by obtaining method</h3>
                 <div class="move-grid">
                     <div class="move-table-wrap">
                         <table class="move-table">
-                            <h3 class="section-title">Level-Up Moves</h3>
+                            <h3 class="section-title">Lvl Up</h3>
                             <thead>
                                 <tr>
+                                    <th>Lvl</th>
                                     <th>Move</th>
-                                    <th>Learned At</th>
+                                    <th>Acc</th>
+                                    <th>Pow</th>
+                                    <th>PP</th>
+                                    <th>Cat</th>
+                                    <th>Type</th>
                                 </tr>
                             </thead>
                             <tbody>
                                 {% for move in pokemon_data.moves | selectattr('method', 'equalto', 'level-up') | sort(attribute='learned_at') %}
                                 <tr>
-                                    <td>{{ move.name | format_name }}</td>
-                                    <td>{{ move.learned_at }}</td>
+                                    <td>{{ move.learned_at if move.learned_at is not none else '-' }}</td>
+                                    <td>
+                                        {% if move.link %}<a href="{{ move.link }}">{% endif %}
+                                        {{ move.name | format_name if move.name is not none else '-' }}
+                                        {% if move.link %}</a>{% endif %}
+                                    </td>
+                                    <td>{{ move.accuracy if move.accuracy is not none else '-' }}</td>
+                                    <td>{{ move.power if move.power is not none else '-' }}</td>
+                                    <td>{{ move.pp if move.pp is not none else '-' }}</td>
+                                    {% set category_icon = category_icon_map.get(move.category | lower) if move.category is not none else none %}
+                                    <td>
+                                        {% if category_icon %}
+                                            <img class="move-category-icon" src="{{ category_icon }}" alt="{{ move.category }}" title="{{ move.category }}">
+                                        {% else %}
+                                            {{ category_labels.get(move.category | lower, move.category) if move.category is not none else '-' }}
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        {% if move.type is not none %}
+                                            <span class="type-badge-tiny">
+                                                <img src="{{ type_icon_map.get(move.type | lower, type_icon_map['normal']) }}" alt="{{ move.type }}" title="{{ move.type }}">
+                                            </span>
+                                        {% else %}
+                                            -
+                                        {% endif %}
+                                    </td>
                                 </tr>
                                 {% endfor %}
                             </tbody>
@@ -446,17 +586,48 @@
                     </div>
 
                     <div class="move-table-wrap">
-                        <table class="move-table">
-                            <h3 class="section-title">TM Moves</h3>
+                        <table class="move-table move-table--other">
+                            <h3 class="section-title">Other</h3>
                             <thead>
                                 <tr>
+                                    <th>Method</th>
                                     <th>Move</th>
+                                    <th>Acc</th>
+                                    <th>Pow</th>
+                                    <th>PP</th>
+                                    <th>Cat</th>
+                                    <th>Type</th>
                                 </tr>
                             </thead>
                             <tbody>
-                                {% for move in pokemon_data.moves | selectattr('method', 'equalto', 'machine') | sort(attribute='name') %}
+                                {% for move in pokemon_data.moves | rejectattr('method', 'equalto', 'level-up') | sort(attribute='name') %}
                                 <tr>
-                                    <td>{{ move.name | format_name }}</td>
+                                    <td>{{ ('TM' if move.method == 'machine' else (move.method | replace('-', ' ') | title)) if move.method is not none else '-' }}</td>
+                                    <td>
+                                        {% if move.link %}<a href="{{ move.link }}">{% endif %}
+                                        {{ move.name | format_name if move.name is not none else '-' }}
+                                        {% if move.link %}</a>{% endif %}
+                                    </td>
+                                    <td>{{ move.accuracy if move.accuracy is not none else '-' }}</td>
+                                    <td>{{ move.power if move.power is not none else '-' }}</td>
+                                    <td>{{ move.pp if move.pp is not none else '-' }}</td>
+                                    {% set category_icon = category_icon_map.get(move.category | lower) if move.category is not none else none %}
+                                    <td>
+                                        {% if category_icon %}
+                                            <img class="move-category-icon" src="{{ category_icon }}" alt="{{ move.category }}" title="{{ move.category }}">
+                                        {% else %}
+                                            {{ category_labels.get(move.category | lower, move.category) if move.category is not none else '-' }}
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        {% if move.type is not none %}
+                                            <span class="type-badge-tiny">
+                                                <img src="{{ type_icon_map.get(move.type | lower, type_icon_map['normal']) }}" alt="{{ move.type }}" title="{{ move.type }}">
+                                            </span>
+                                        {% else %}
+                                            -
+                                        {% endif %}
+                                    </td>
                                 </tr>
                                 {% endfor %}
                             </tbody>
