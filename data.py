@@ -55,6 +55,11 @@ def get_version_group_by_verison(game_str:str):
     data_ver = response_ver.json()
     return data_ver['version_group']['name']
 
+@lru_cache(maxsize=None)
+def get_version_group_id(group_str:str):
+    data_group = session.get(f"{URL_BASE}version-group/{group_str}/").json()
+    return data_group['id']
+
 def get_locations_by_region(region:str):
     response_gen = session.get(f"{URL_BASE}region/{region}/")
     
@@ -154,8 +159,9 @@ def get_encounter_info_by_pokemon(area_num: int, game_str: str, pokemon_str: str
     return []
 
 @lru_cache(maxsize=None)
-def get_move_info(move_str:str):
+def get_move_info(move_str: str, group_id: int):
     move_json = session.get(f"{URL_BASE}move/{move_str}/").json()
+
     move_dict = {
         'name': move_json['name'],
         'accuracy': move_json['accuracy'],
@@ -163,7 +169,23 @@ def get_move_info(move_str:str):
         'pp': move_json['pp'],
         'priority': move_json['priority'],
         'category': move_json['damage_class']['name'],
-        'type': move_json['type']['name']}
+        'type': move_json['type']['name'],
+    }
+
+    applicable = [
+        (get_version_group_id(p['version_group']['name']), p)
+        for p in move_json['past_values']
+        if group_id <= get_version_group_id(p['version_group']['name'])
+    ]
+
+    if applicable:
+        _, past = min(applicable, key=lambda pair: pair[0])
+        for field in ('accuracy', 'power', 'pp'):
+            if past.get(field) is not None:
+                move_dict[field] = past[field]
+        if past.get('type') is not None:
+            move_dict['type'] = past['type']['name']
+
     return move_dict
 
 def get_pokemon_info_by_name(area_num:int, game_str:str, pokemon_name:str):
@@ -171,6 +193,7 @@ def get_pokemon_info_by_name(area_num:int, game_str:str, pokemon_name:str):
     pokemon_url_data = session.get(f"{URL_BASE}pokemon/{pokemon_name}")
     pokemon_json_data = pokemon_url_data.json()
     version_group = get_version_group_by_verison(game_str)
+    version_group_id = get_version_group_id(version_group)
     
     pokemon_dict:dict = dict(name = f"{pokemon_json_data['name']}", stats = {"HP": pokemon_json_data['stats'][0]['base_stat'], "ATK": pokemon_json_data['stats'][1]['base_stat'], "DEF": pokemon_json_data['stats'][2]['base_stat'], "SPEATK": pokemon_json_data['stats'][3]['base_stat'], "SPEDEF": pokemon_json_data['stats'][4]['base_stat'], "SPE": pokemon_json_data['stats'][5]['base_stat']})
     pokemon_dict['id'] = pokemon_json_data['id']
@@ -184,7 +207,7 @@ def get_pokemon_info_by_name(area_num:int, game_str:str, pokemon_name:str):
     pokemon_dict['encounters'] = get_encounter_info_by_pokemon(area_num, game_str, pokemon_name)
     pokemon_dict['moves'] = [
         {
-            **get_move_info(key['move']['name']),
+            **get_move_info(key['move']['name'], version_group_id),
             'link': get_pokewiki_link(key['move']['name']),
             'method': version_group_detail['move_learn_method']['name'],
             **(
@@ -281,4 +304,6 @@ if __name__ == '__main__':
     print(get_pokemon_info_by_name(get_trailing_number(data['areas'][2]['url']), Edition, 'mewtwo'))
     print(get_pokewiki_link('brick-break'))
     print(get_version_group_by_verison('x'))
-    print(get_move_info('fire-punch'))
+    print(get_version_group_id(get_version_group_by_verison('x')))
+    print(get_move_info('thunder-wave', 1))
+    print(get_move_info('thunder-wave', 25))
