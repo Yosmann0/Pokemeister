@@ -1,0 +1,20 @@
+.leftside, .rightside {
+    height: 100vh;
+    width: 100%;
+}
+
+.leftside {
+    background-color: #f0f0f0;
+    float: left;
+}
+
+.rightside {
+    background-color: #585ead;
+    float: right;
+}
+
+.page-wrap {
+    max-width: 800px;
+    margin: 0 auto;
+    padding: 20px;
+}

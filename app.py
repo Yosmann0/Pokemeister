@@ -21,6 +21,13 @@ def format_name(value):
         return ""
     return " ".join(part.capitalize() for part in str(value).replace('-', ' ').split())
 
+def test_get_pokemon_list_by_game(game_str: str) -> List[str]:
+    # This is a placeholder for the actual implementation.
+    # Replace this with the actual logic to retrieve the list of Pokémon names for the given game.
+    if game_str == "red" or game_str == "blue":
+        return ["Pikachu", "Charmander", "Bulbasaur", "Squirtle"]
+    else:
+        return ["Unknown Pokémon"]
 
 app.jinja_env.filters['format_name'] = format_name
 
@@ -96,6 +103,11 @@ def result():
         back_query=back_query
     )
 
+@app.route('/damage_calculator')
+def damage_calculator():
+    games = get_all_games()
+    return render_template('damage-calc.html', games=games)
+
 
 # --- API routes (return JSON, called by fetch() in the browser) -----------
 
@@ -152,6 +164,15 @@ def api_regions():
         return jsonify([])
     regions : list[str] = get_region_by_game(game_name)
     return regions
+
+@app.route('/api/pokemon_list')
+def api_pokemon_list():
+    game_name = request.args.get('game', type=str)
+    if not game_name:
+        return jsonify([])
+
+    pokemon_list = test_get_pokemon_list_by_game(game_name)
+    return jsonify(pokemon_list)
 
 if __name__ == '__main__':
     app.run(debug=True)
