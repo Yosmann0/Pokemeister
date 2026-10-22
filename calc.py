@@ -30,25 +30,6 @@ class Natures(Enum):
     NAIVE =     [1, 1, 1, 0.9, 1.1]
     SERIOUS =   [1, 1, 1, 1, 1]
 
-#first number is the generation, second is version-group (import for move and ability list)
-class Games(Enum):
-    RUBY_SAPHIRE = [3, 5]
-    EMERALD = [3, 6]
-    FIRERED_LEAFGREEN = [3, 7]
-    DIAMOND_PEARL = [4, 8]
-    PLATINUM = [4, 9]
-    HEARTGOLD_SOULSILVER = [4, 10]
-    BLACK_WHITE = [5, 11]
-    BLACK_WHITE2 = [5, 14]
-    X_Y = [6, 15]
-    OMEGARUBY_ALPHASAPPHIRE = [6, 16]
-    SUN_MOON = [7, 17]
-    ULTRASUN_ULTRAMOON = [7, 18]
-    LETSGOPIKACHU_LETSGOEEVEE = [7, 19]
-    SWORD_SHIELD = [8, 20]
-    BRILLIANTDIAMOND_SHININGPEARL = [8, 23]
-
-
 class Pokemon():
     def __init__(self, name:str, dex:int=None, abilities:list=None, moves:list=None, types:list=None, basestats:list=None):
         self.dex = dex
@@ -99,9 +80,6 @@ def dummy_fight(pokemon_1:Pokemon, pokemon_2:Pokemon):
         return f"{pokemon_2.name} died"
     else:
         return f"HP left:{x}"
-
-
-
 
 Pokemon_1 = Pokemon("snorlax", 143, ["immunity", "thick-fat", "gluttony"], ["mega-punch"], ["normal"], [160, 110, 65, 65, 110, 30])
 print(Pokemon_1.dex)

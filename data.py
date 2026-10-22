@@ -14,6 +14,69 @@ with open("files/game_list.json", "r") as file:
 
 FULL_LIST = list_data["list"]
 
+GAMES = {
+    # Generation 1
+    'red': {'generation': 1, 'version-group': 1, 'version': 1},
+    'blue': {'generation': 1, 'version-group': 1, 'version': 2},
+    'yellow': {'generation': 1, 'version-group': 2, 'version': 3},
+
+    # Generation 2
+    'gold': {'generation': 2, 'version-group': 3, 'version': 4},
+    'silver': {'generation': 2, 'version-group': 3, 'version': 5},
+    'crystal': {'generation': 2, 'version-group': 4, 'version': 6},
+
+    # Generation 3
+    'ruby': {'generation': 3, 'version-group': 5, 'version': 7},
+    'sapphire': {'generation': 3, 'version-group': 5, 'version': 8},
+    'emerald': {'generation': 3, 'version-group': 6, 'version': 9},
+    'firered': {'generation': 3, 'version-group': 7, 'version': 10},
+    'leafgreen': {'generation': 3, 'version-group': 7, 'version': 11},
+    'colosseum': {'generation': 3, 'version-group': 12, 'version': 19},
+    'xd': {'generation': 3, 'version-group': 13, 'version': 20},
+
+    # Generation 4
+    'diamond': {'generation': 4, 'version-group': 8, 'version': 12},
+    'pearl': {'generation': 4, 'version-group': 8, 'version': 13},
+    'platinum': {'generation': 4, 'version-group': 9, 'version': 14},
+    'heartgold': {'generation': 4, 'version-group': 10, 'version': 15},
+    'soulsilver': {'generation': 4, 'version-group': 10, 'version': 16},
+
+    # Generation 5
+    'black': {'generation': 5, 'version-group': 11, 'version': 17},
+    'white': {'generation': 5, 'version-group': 11, 'version': 18},
+    'black2': {'generation': 5, 'version-group': 14, 'version': 21},
+    'white2': {'generation': 5, 'version-group': 14, 'version': 22},
+
+    # Generation 6
+    'x': {'generation': 6, 'version-group': 15, 'version': 23},
+    'y': {'generation': 6, 'version-group': 15, 'version': 24},
+    'omegaruby': {'generation': 6, 'version-group': 16, 'version': 25},
+    'alphasapphire': {'generation': 6, 'version-group': 16, 'version': 26},
+
+    # Generation 7
+    'sun': {'generation': 7, 'version-group': 17, 'version': 27},
+    'moon': {'generation': 7, 'version-group': 17, 'version': 28},
+    'ultrasun': {'generation': 7, 'version-group': 18, 'version': 29},
+    'ultramoon': {'generation': 7, 'version-group': 18, 'version': 30},
+    'letsgopikachu': {'generation': 7, 'version-group': 19, 'version': 31},
+    'letsgoeevee': {'generation': 7, 'version-group': 19, 'version': 32},
+
+    # Generation 8
+    'sword': {'generation': 8, 'version-group': 20, 'version': 33},
+    'shield': {'generation': 8, 'version-group': 20, 'version': 34},
+    'the_isle_of_armor': {'generation': 8, 'version-group': 21, 'version': 35},  # DLC
+    'the_crown_tundra': {'generation': 8, 'version-group': 22, 'version': 36},   # DLC
+    'brilliantdiamond': {'generation': 8, 'version-group': 23, 'version': 37},
+    'shiningpearl': {'generation': 8, 'version-group': 23, 'version': 38},
+    'legends_arceus': {'generation': 8, 'version-group': 24, 'version': 39},
+
+    # Generation 9
+    'scarlet': {'generation': 9, 'version-group': 25, 'version': 40},
+    'violet': {'generation': 9, 'version-group': 25, 'version': 41},
+    'the_teal_mask': {'generation': 9, 'version-group': 26, 'version': 42},      # DLC
+    'the_indigo_disk': {'generation': 9, 'version-group': 27, 'version': 43},    # DLC
+}
+
 class EncounterMethods(Enum):
     WALK = 'walk'
     OLD_ROD = 'old-rod'
@@ -55,6 +118,14 @@ def get_version_group_by_version(game_str:str):
     response_ver = session.get(f"{URL_BASE}version/{game_str}/")
     data_ver = response_ver.json()
     return data_ver['version_group']['name']
+
+def get_all_pokemon_by_gen(gen_num:int=None, gen_dict:dict=None, filter_str:str=None) -> List[str]:
+    pokemon_list = []
+    for i in range(1, gen_num+1):
+        data_gen = session.get(f"{URL_BASE}generation/{i}").json()
+        for m in data_gen['pokemon_species']:
+            pokemon_list.append(m['name'])
+    return pokemon_list
 
 @lru_cache(maxsize=None)
 def get_version_group_id(group_str:str):
@@ -376,3 +447,5 @@ if __name__ == '__main__':
     print(get_move_info('thunder-wave', 25))
     print(get_less_pokemon_info_by_name('x', 'mewtwo'))
     print(get_less_pokemon_info_by_name('y', 'aegislash-shield'))
+    a = get_all_pokemon_by_gen(GAMES['emerald']['generation'])
+    print(a)
