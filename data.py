@@ -119,7 +119,7 @@ def get_version_group_by_version(game_str:str):
     data_ver = response_ver.json()
     return data_ver['version_group']['name']
 
-def get_all_pokemon_by_gen(gen_num:int=None, gen_dict:dict=None, filter_str:str=None) -> List[str]:
+def get_all_pokemon_by_gen(gen_num:int=None, filter_str:str=None) -> List[str]:
     pokemon_list = []
     for i in range(1, gen_num+1):
         data_gen = session.get(f"{URL_BASE}generation/{i}").json()
@@ -131,6 +131,9 @@ def get_all_pokemon_by_gen(gen_num:int=None, gen_dict:dict=None, filter_str:str=
 def get_version_group_id(group_str:str):
     data_group = session.get(f"{URL_BASE}version-group/{group_str}/").json()
     return data_group['id']
+
+def get_group_id_by_game(game:str):
+    return get_version_group_id(get_version_group_by_version(game))
 
 def get_pokemon_sprite(name:str):
     data_pokemon = session.get(f"{URL_BASE}pokemon/{name}/").json()
@@ -293,6 +296,15 @@ def get_move_info(move_str: str, group_id: int):
         if past.get('type') is not None:
             move_dict['type'] = past['type']['name']
 
+    #pre gen 4 move categories
+    category = move_dict['category']
+    if group_id < 8: #uses group id because moves change between games not generations (group id 8 = diamond/pearl)
+        if category != 'status':
+            if category in ['normal', 'fighting', 'flying', 'poison', 'ground', 'rock', 'bug', 'ghost', 'steel']:
+                move_dict['category'] = 'physical'
+            else:
+                move_dict['category'] = 'special'
+
     return move_dict
 
 def get_pokemon_info_by_name(area_num:int, game_str:str, pokemon_name:str):
@@ -343,7 +355,24 @@ def get_pokemon_info_by_name(area_num:int, game_str:str, pokemon_name:str):
     pokemon_dict['moves'].sort(key=lambda x: x['method'])
     return pokemon_dict
 
-def get_less_pokemon_info_by_name(game_str:str, pokemon_name:str):
+def get_less_pokemon_info_by_name(game_str:str, pokemon_name:str) -> dict:
+    """
+    returns pokemon data
+    
+    Args:
+        game_str(str): String of Game
+        pokemon_name(str): String of Pokemon
+
+    Returns:
+        name(str): Name of Pokemon
+        stats(dict[int]): dict for Pokemon Basestats
+        id(int): Dex number of Pokemon
+        typing(List[str]): typing of Pokemon
+        abilities(List[str]): List of the Pokemons abilities
+        height(int): height of Pokemon
+        weight(int): weight of Pokemon
+        moves(List[str]): List of the Pokemons moves
+    """
     
     pokemon_url_data = session.get(f"{URL_BASE}pokemon/{pokemon_name}")
     pokemon_json_data = pokemon_url_data.json()
@@ -449,3 +478,4 @@ if __name__ == '__main__':
     print(get_less_pokemon_info_by_name('y', 'aegislash-shield'))
     a = get_all_pokemon_by_gen(GAMES['emerald']['generation'])
     print(a)
+    print(get_move_info('fire-punch', GAMES['emerald']['version-group']))
