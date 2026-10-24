@@ -73,6 +73,12 @@
             .then(data => new Pokemon(data.name, data.type, data.base_stats, data.abilities));
     }
 
+    function getPokemonSprite(pokemonName) {
+        return fetch(`/api/pokemon_sprite?name=${encodeURIComponent(pokemonName)}`)
+            .then(response => response.json())
+            .then(data => data.sprite_url);
+    }
+
     // game selection logic
     function getPokemonListByGame(game) {
         return fetch(`/api/pokemon_list?game=${encodeURIComponent(game)}`)
@@ -89,6 +95,16 @@
 
     function updateSelectedPokemonDisplay(selectElement, displayElementId) {
         const selectedPokemon = selectElement.value;
+        sprite = getPokemonSprite(selectedPokemon).then(spriteUrl => {
+            const imgElement = document.createElement('img');
+            imgElement.src = spriteUrl;
+            imgElement.alt = selectedPokemon;
+            imgElement.classList.add('pokemon-sprite');
+
+            const displayElement = document.getElementById(displayElementId);
+            displayElement.innerHTML = ''; // Clear previous content
+            displayElement.appendChild(imgElement);
+        });
         document.getElementById(displayElementId).textContent = selectedPokemon;
     }
 

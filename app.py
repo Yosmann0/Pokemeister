@@ -11,6 +11,7 @@ from data import (
     EncounterMethods,
     get_encounter_by_area_filtered_methods,
     get_encounter_info_by_pokemon,
+    get_pokemon_sprite,
 )
 
 app = Flask(__name__)
@@ -201,6 +202,15 @@ def api_pokemon_data():
 
     pokemon_data = test_get_pokemon_data(pokemon_name)
     return jsonify(pokemon_data)
+
+@app.route('/api/pokemon_sprite')
+def api_pokemon_sprite():
+    pokemon_name = request.args.get('name', type=str)
+    if not pokemon_name:
+        return jsonify({})
+
+    sprite_url = get_pokemon_sprite(pokemon_name)
+    return jsonify({"sprite_url": sprite_url})
 
 if __name__ == '__main__':
     app.run(debug=True)
