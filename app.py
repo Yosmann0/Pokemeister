@@ -12,6 +12,7 @@ from data import (
     get_encounter_by_area_filtered_methods,
     get_encounter_info_by_pokemon,
     get_pokemon_sprite,
+    get_less_pokemon_info_by_name
 )
 
 app = Flask(__name__)
@@ -197,10 +198,14 @@ def api_pokemon_list():
 @app.route('/api/pokemon_data')
 def api_pokemon_data():
     pokemon_name = request.args.get('name', type=str)
+    game_name = request.args.get('game', type=str)
     if not pokemon_name:
-        return jsonify({})
+        return jsonify({"error": "Pokémon not found"}), 404
 
-    pokemon_data = test_get_pokemon_data(pokemon_name)
+    pokemon_data = get_less_pokemon_info_by_name(game_name, pokemon_name)
+    if not pokemon_data:
+        return jsonify({"error": "Pokémon not found"}), 404
+    
     return jsonify(pokemon_data)
 
 @app.route('/api/pokemon_sprite')
