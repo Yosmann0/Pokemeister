@@ -20,30 +20,58 @@
                 {% endfor %}
             </select>
             <p>You picked: <span id="selected-game"></span></p>
+            <p>Available Pokémon: <span id="pokemon-list"></span></p>
         </div>
 
         <div class="row">
             <div class="col">
                 <div class="leftside">
-                    <label for="left_pokemon">Left Pokémon:</label>
+                    <label>Left Pokémon:</label>
+                    <div class="pokemon_list">
+                        <label for="pokemon_selection_list_left">Select Pokémon:</label>
+                        <select id="pokemon_selection_list_left" name="pokemon_selection_list_left"></select>
+                        <span id="selected-pokemon-left"></span>
+                    </div>
                 </div>
             </div>
             <div class="col">
                 <div class="rightside">
-                    <label for="right_pokemon">Right Pokémon:</label>
+                    <label>Right Pokémon:</label>
+                    <div class="pokemon_list">
+                        <label for="pokemon_selection_list_right">Select Pokémon:</label>
+                        <select id="pokemon_selection_list_right" name="pokemon_selection_list_right"></select>
+                        <span id="selected-pokemon-right"></span>
+                    </div>
+                </div>
                 </div>
             </div>
         </div>
 
-        <div class="pokemon_list">
-            <p>Pokemon List: <span id="pokemon-list"></span></p>
-            <label for="pokemon_selection_list">Select Pokémon:</label>
-            <select id="pokemon_selection_list" name="pokemon_selection_list"></select>
-        </div>
+        
     </div>
 </div>
 
 <script>
+
+    const pokemonSelectLeft = document.getElementById('pokemon_selection_list_left');
+    const pokemonSelectRight = document.getElementById('pokemon_selection_list_right');
+
+    const leftPokemonData = new Pokemon()
+    const rightPokemonData = new Pokemon()
+
+    function Pokemon(name = "Undefined", type = "Undefined", baseStats= null, abilities = null) {
+        this.name = name;
+        this.type = type;
+        this.baseStats = baseStats; // { hp: 0, attack: 0, defense: 0, specialAttack: 0, specialDefense: 0, speed: 0 }
+        this.moves = [];
+        this.abilities = abilities;
+    }
+
+    function getPokemonData(pokemonName) {
+        return fetch(`/api/pokemon_data?name=${encodeURIComponent(pokemonName)}`)
+            .then(response => response.json())
+            .then(data => new Pokemon(data.name, data.type, data.base_stats, data.abilities));
+    }
 
     // game selection logic
     function getPokemonListByGame(game) {
@@ -51,18 +79,40 @@
             .then(response => response.json())
     }
 
-    const pokemonSelect = document.getElementById('pokemon_selection_list');
-    function fillPokemonList(pokemonList) {
-        pokemonSelect.innerHTML = ''; // Clear existing options
+    function fillPokemonList(pokemonList, selectElement) {
+        selectElement.innerHTML = ''; // Clear existing options
         pokemonList.forEach(pokemon => {
             console.log(pokemon)
-            pokemonSelect.options.add(new Option(pokemon,pokemon))
+            selectElement.options.add(new Option(pokemon,pokemon))
         });
     }
 
-    function getSelectedPokemonData() {
-        return pokemonSelect.value;
+    function updateSelectedPokemonDisplay(selectElement, displayElementId) {
+        const selectedPokemon = selectElement.value;
+        document.getElementById(displayElementId).textContent = selectedPokemon;
     }
+
+    pokemonSelectLeft.addEventListener("change", () => {
+        getPokemonData(pokemonSelectLeft.value).then(pokemon => {
+            leftPokemonData.name = pokemon.name;
+            leftPokemonData.type = pokemon.type;
+            leftPokemonData.baseStats = pokemon.baseStats;
+            leftPokemonData.abilities = pokemon.abilities;
+            console.log("Left Pokémon Data:", leftPokemonData);
+        });
+        updateSelectedPokemonDisplay(pokemonSelectLeft, 'selected-pokemon-left');
+    });
+
+    pokemonSelectRight.addEventListener("change", () => {
+        getPokemonData(pokemonSelectRight.value).then(pokemon => {
+            rightPokemonData.name = pokemon.name;
+            rightPokemonData.type = pokemon.type;
+            rightPokemonData.baseStats = pokemon.baseStats;
+            rightPokemonData.abilities = pokemon.abilities;
+            console.log("Right Pokémon Data:", rightPokemonData);
+        });
+        updateSelectedPokemonDisplay(pokemonSelectRight, 'selected-pokemon-right');
+    });
 
     const gameSelect = document.getElementById('game');
     gameSelect.addEventListener("change", () => {
@@ -71,7 +121,8 @@
         getPokemonListByGame(gameSelect.value).then(pokemonList => {
             console.log("Pokemon List:", pokemonList);
             document.getElementById('pokemon-list').textContent = pokemonList.join(", ");
-            fillPokemonList(pokemonList)
+            fillPokemonList(pokemonList, pokemonSelectLeft);
+            fillPokemonList(pokemonList, pokemonSelectRight);
         });
     });
 

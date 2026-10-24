@@ -29,6 +29,25 @@ def test_get_pokemon_list_by_game(game_str: str) -> List[str]:
     else:
         return ["Unknown Pokémon"]
 
+def test_get_pokemon_data(pokemon_name: str) -> dict:
+    # This is a placeholder for the actual implementation.
+    # Replace this with the actual logic to retrieve Pokémon data by name.
+    if pokemon_name.lower() == "pikachu":
+        return {
+            "name": "Pikachu",
+            "type": ["Electric"],
+            "base_stats": {"hp": 35, "attack": 55, "defense": 40, "special_attack": 50, "special_defense": 50, "speed": 90},
+            "abilities": ["Static", "Lightning Rod"],
+        }
+    else:
+        placeholder_data = {
+            "name": pokemon_name,
+            "type": ["Normal"],
+            "base_stats": {"hp": 50, "attack": 50, "defense": 50, "special_attack": 50, "special_defense": 50, "speed": 50},
+            "abilities": ["Run Away", "Adaptability"],
+        }
+        return placeholder_data
+
 app.jinja_env.filters['format_name'] = format_name
 
 @app.route('/') 
@@ -173,6 +192,15 @@ def api_pokemon_list():
 
     pokemon_list = test_get_pokemon_list_by_game(game_name)
     return jsonify(pokemon_list)
+
+@app.route('/api/pokemon_data')
+def api_pokemon_data():
+    pokemon_name = request.args.get('name', type=str)
+    if not pokemon_name:
+        return jsonify({})
+
+    pokemon_data = test_get_pokemon_data(pokemon_name)
+    return jsonify(pokemon_data)
 
 if __name__ == '__main__':
     app.run(debug=True)
