@@ -12,7 +12,8 @@ from data import (
     get_encounter_by_area_filtered_methods,
     get_encounter_info_by_pokemon,
     get_pokemon_sprite,
-    get_less_pokemon_info_by_name
+    get_less_pokemon_info_by_name,
+    get_move_info
 )
 
 app = Flask(__name__)
@@ -30,25 +31,6 @@ def test_get_pokemon_list_by_game(game_str: str) -> List[str]:
         return ["Pikachu", "Charmander", "Bulbasaur", "Squirtle"]
     else:
         return ["Unknown Pokémon"]
-
-def test_get_pokemon_data(pokemon_name: str) -> dict:
-    # This is a placeholder for the actual implementation.
-    # Replace this with the actual logic to retrieve Pokémon data by name.
-    if pokemon_name.lower() == "pikachu":
-        return {
-            "name": "Pikachu",
-            "type": ["Electric"],
-            "base_stats": {"hp": 35, "attack": 55, "defense": 40, "special_attack": 50, "special_defense": 50, "speed": 90},
-            "abilities": ["Static", "Lightning Rod"],
-        }
-    else:
-        placeholder_data = {
-            "name": pokemon_name,
-            "type": ["Normal"],
-            "base_stats": {"hp": 50, "attack": 50, "defense": 50, "special_attack": 50, "special_defense": 50, "speed": 50},
-            "abilities": ["Run Away", "Adaptability"],
-        }
-        return placeholder_data
 
 app.jinja_env.filters['format_name'] = format_name
 
@@ -226,6 +208,14 @@ def api_pokemon_card():
     pokemon['sprite'] = get_pokemon_sprite(pokemon_name)
 
     return render_template('pokemon-card.html', pokemon=pokemon)
+
+@app.route('/api/move_card')
+def api_move_card():
+    move_str = request.args.get('name', type=str)
+    game_str = request.args.get('game', type=str)
+
+    move = get_move_info(move_str = move_str, game_str=game_str)
+    return render_template('move-card.html', move=move)
 
 if __name__ == '__main__':
     app.run(debug=True)

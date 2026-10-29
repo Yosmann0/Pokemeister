@@ -269,7 +269,13 @@ def get_encounter_info_by_pokemon(area_num: int, game_str: str, pokemon_str: str
 
 #this should be game_str instead of group_id for consistency
 @lru_cache(maxsize=None)
-def get_move_info(move_str: str, group_id: int):
+def get_move_info(move_str: str, group_id: int = None, game_str: str = None) -> dict:
+
+    if group_id is None:
+        if game_str is None:
+            raise ValueError("Either group_id or game_str must be provided.")
+        group_id = GAMES[game_str]['version-group']
+
     move_json = session.get(f"{URL_BASE}move/{move_str}/").json()
 
     move_dict = {

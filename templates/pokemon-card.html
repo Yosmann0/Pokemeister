@@ -15,7 +15,8 @@
     <p>Weight: {{ pokemon.weight / 10 }} kg</p>
 
     <h4>Moves</h4>
-    <select>
+    <select class="move-select">
+        <option value="" selected disabled>Select a move</option>
         {% for move in pokemon.moves %}
             <option value="{{ move }}">{{ move }}</option>
         {% endfor %}

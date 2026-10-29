@@ -34,6 +34,7 @@
                             <option value="" disabled selected hidden>Select Pokémon</option>
                         </select>
                         <span id="selected-pokemon-left"></span>
+                        <div id="selected-move-left"></div>
                     </div>
                 </div>
             </div>
@@ -46,6 +47,7 @@
                             <option value="" disabled selected hidden>Select Pokémon</option>
                         </select>
                         <span id="selected-pokemon-right"></span>
+                        <div id="selected-move-right"></div>
                     </div>
                 </div>
                 </div>
@@ -61,11 +63,13 @@
     const pokemonSelectLeft = document.getElementById('pokemon_selection_list_left');
     const pokemonSelectRight = document.getElementById('pokemon_selection_list_right');
     const gameSelect = document.getElementById('game');
+    const selectedPokemonLeft = document.getElementById('selected-pokemon-left');
+    const selectedPokemonRight = document.getElementById('selected-pokemon-right');
 
     const leftPokemonData = new Pokemon()
     const rightPokemonData = new Pokemon()
 
-    function Pokemon(name = "Undefined", stats = {}, id = 0, types = [], abilities = [], height = 0, weight = 0, moves = []) {
+    function Pokemon(name = "Undefined", stats = {}, id = 0, types = [], abilities = [], height = 0, weight = 0, moves = [], selectedMove = "None") {
         this.name = name;
         this.stats = stats;
         this.id = id;
@@ -74,6 +78,7 @@
         this.height = height;
         this.weight = weight;
         this.moves = moves;
+        this.selectedMove = selectedMove;
     }
 
     function getPokemonData(pokemonName,gameName) {
@@ -117,23 +122,15 @@
         document.getElementById(cardElementId).innerHTML = html;
     }
 
-    function updateSelectedPokemonDisplay(selectElement, displayElementId, pokemonData) {
-        const selectedPokemon = selectElement.value;
-        sprite = getPokemonSprite(selectedPokemon).then(spriteUrl => {
-            const imgElement = document.createElement('img');
-            imgElement.src = spriteUrl;
-            imgElement.alt = selectedPokemon;
-            imgElement.classList.add('pokemon-sprite');
-
-            const displayElement = document.getElementById(displayElementId);
-            displayElement.innerHTML = ''; // Clear previous content
-            displayElement.appendChild(imgElement);
-            //displayElement.appendChild(document.createTextNode(selectedPokemon));
-        });
-        renderObjectProperties(pokemonData, displayElementId);
+    async function updateMoveCard(moveName, gameName, cardElementId) {
+        const response = await fetch(`/api/move_card?name=${encodeURIComponent(moveName)}&game=${encodeURIComponent(gameName)}`);
+        const html = await response.text();
+        document.getElementById(cardElementId).innerHTML = html;
     }
 
     pokemonSelectLeft.addEventListener("change", () => {
+        leftPokemonData.selectedMove = null;
+        document.getElementById("selected-move-left").replaceChildren();
         getPokemonData(pokemonSelectLeft.value, gameSelect.value).then(pokemon => {
             leftPokemonData.name = pokemon.name;
             leftPokemonData.stats = pokemon.stats;
@@ -146,10 +143,11 @@
             console.log("Left Pokémon Data:", leftPokemonData);
         });
         updatePokemonCard(pokemonSelectLeft.value, gameSelect.value, 'selected-pokemon-left');
-        //updateSelectedPokemonDisplay(pokemonSelectLeft, 'selected-pokemon-left',leftPokemonData);
     });
 
     pokemonSelectRight.addEventListener("change", () => {
+        rightPokemonData.selectedMove = null;
+        document.getElementById("selected-move-right").replaceChildren();
         getPokemonData(pokemonSelectRight.value, gameSelect.value).then(pokemon => {
             rightPokemonData.name = pokemon.name;
             rightPokemonData.stats = pokemon.stats;
@@ -161,7 +159,6 @@
             rightPokemonData.moves = pokemon.moves;
             console.log("Right Pokémon Data:", rightPokemonData);
         });
-        // updateSelectedPokemonDisplay(pokemonSelectRight, 'selected-pokemon-right',rightPokemonData);
         updatePokemonCard(pokemonSelectRight.value, gameSelect.value, 'selected-pokemon-right');
     });
 
@@ -176,6 +173,23 @@
         });
     });
 
+    selectedPokemonLeft.addEventListener("change", (event) => {
+        if (!event.target.matches('.move-select')) {
+            return
+        }
+        leftPokemonData.selectedMove = event.target.value;
+        console.log("Selected Move (Left):", leftPokemonData.selectedMove);
+        updateMoveCard(leftPokemonData.selectedMove, gameSelect.value, 'selected-move-left');
+    });
+
+    selectedPokemonRight.addEventListener("change", (event) => {
+        if (!event.target.matches('.move-select')) {
+            return
+        } 
+        rightPokemonData.selectedMove = event.target.value;
+        console.log("Selected Move (Right):", rightPokemonData.selectedMove);
+        updateMoveCard(rightPokemonData.selectedMove, gameSelect.value, 'selected-move-right');
+    });
 
 </script>
 
