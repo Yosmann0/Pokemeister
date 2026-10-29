@@ -130,31 +130,78 @@ def dummy_fight(pokemon_1:Pokemon, pokemon_2:Pokemon):
 def damage_gen3(attacker:Pokemon, defender:Pokemon, move_name:str, game:str, info:dict):
     move = get_move_info(move_name, get_group_id_by_game(game))
     if move['power'] == None: return 0
+    state_info = get_info_gen_3(info, move)
     if move['category'] == 'physical':
-        damage_high:float = (((2 * attacker.level / 5 + 2) * move['power'] * attacker.stats[1] / defender.stats[2] / 50))
+        damage_high:float = ((((2 * attacker.level / 5 + 2) * move['power'] * attacker.stats[1] / defender.stats[2] / 50) * state_info['burn']
+                            * state_info['screen'] * state_info['flashfire'] + 2) * state_info['stockpile'] * state_info['crit'] * state_info['doubledamage']
+                            * state_info['charge'] * state_info['helpinghand'] * state_info['stab'] * type_chart_gen5(move['type'], defender.types[0], defender.types[1]))
         damage_low:float = damage_high * 0.85
     else:
-        damage_high:float = (((2 * attacker.level / 5 + 2) * move['power'] * attacker.stats[3] / defender.stats[4] / 50))
+        damage_high:float = ((((2 * attacker.level / 5 + 2) * move['power'] * attacker.stats[3] / defender.stats[4] / 50) * state_info['burn']
+                            * state_info['screen'] * state_info['flashfire'] + 2) * state_info['stockpile'] * state_info['crit'] * state_info['doubledamage']
+                            * state_info['charge'] * state_info['helpinghand'] * state_info['stab'] * type_chart_gen5(move['type'], defender.types[0], defender.types[1]))
         damage_low:float = damage_high * 0.85
 
     return f"{ceil(damage_low / defender.stats[0] * 100)}% - {ceil(damage_high / defender.stats[0] * 100)}%"
 
-def info_get(info:dict):
+def get_info_gen_3(info:dict, move:dict):
+    if info == None: info = {'burn': False, 'screen': False, 'double': False, 'flashfire': False, 'weather': False, 'stockpile': 1, 'crit': False, 'doubledamage': False, 'charge': False, 'helpinghand': False, 'stab': False}
     damage_info:dict = {}
     if info['burn']:
-        damage_info['burn'] = 0.5
+        if move['category'] == 'physical':
+            damage_info['burn'] = 0.5
+        else:
+            damage_info['burn'] = 1
+    else:
+        damage_info['burn'] = 1
+    if info['screen']:
+        if info['double']:
+            damage_info['screen'] = 0.67
+        else:
+            damage_info['screen'] = 0.5
+    else:
+        damage_info['screen'] = 1
+    if info['flashfire']:
+        damage_info['flashfire'] = 1.5
+    else:
+        damage_info['flashfire'] = 1
+    damage_info['weather'] = info['weather']
+    damage_info['stockpile'] = info['stockpile']
+    if info['crit']:
+        damage_info['crit'] = 2
+    else:
+        damage_info['crit'] = 1
+    if info['doubledamage']:
+        damage_info['doubledamage'] = 2
+    else:
+        damage_info['doubledamage'] = 1
+    if info['charge']:
+        damage_info['charge'] = 2
+    else:
+        damage_info['charge'] = 1
+    if info['helpinghand']:
+        damage_info['helpinghand'] = 1.5
+    else:
+        damage_info['helpinghand'] = 1
+    if info['stab']:
+        damage_info['stab'] = 1.5
+    else:
+        damage_info['stab'] = 1
+    return damage_info
+
+
 
 def type_chart_gen5(att_type:str, def_type_1:str, def_type_2:str = None) -> float:
     row = CHART_5[att_type]
     multiplier = row.get(def_type_1, 1)
-    if def_type_2 is not None:
+    if def_type_2 != None:
         multiplier *= row.get(def_type_2, 1)
     return multiplier
 
 def type_chart_gen6(att_type:str, def_type_1:str, def_type_2:str = None) -> float:
     row = CHART_6[att_type]
     multiplier = row.get(def_type_1, 1)
-    if def_type_2 is not None:
+    if def_type_2 != None:
         multiplier *= row.get(def_type_2, 1)
     return multiplier
 
@@ -181,9 +228,9 @@ if __name__ == '__main__':
     print(pokemon_1)
     pokemon_2 = Pokemon.get_pokemon("mewtwo", 'x')
     print(pokemon_2)
-    pokemon_3 = Pokemon.get_pokemon('zorua', 'x')
+    pokemon_3 = Pokemon.get_pokemon('doublade', 'x')
     print(pokemon_3)
     print(dummy_fight(pokemon_2, pokemon_3))
     print(get_move_info(pokemon_2.moves[1], GAMES['emerald']['version-group']))
-    print(damage_gen3(pokemon_2, pokemon_3, 'psychic', 'x'))
+    print(damage_gen3(pokemon_2, pokemon_3, 'psychic', 'x', None))
     print(type_chart_gen6('ghost', 'fairy', 'steel'))
