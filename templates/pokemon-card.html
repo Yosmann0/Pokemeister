@@ -1,0 +1,23 @@
+<div class="pokemon-card">
+    <h3>{{ pokemon.name | title }}</h3>
+
+    <img src="{{ pokemon.sprite }}" alt="{{ pokemon.name }}">
+
+    <p>Types: {{ pokemon.typing | join(', ') }}</p>
+    <p>Abilities: {{ pokemon.abilities | join(', ') }}</p>
+
+    <h4>Stats</h4>
+    {% for name, value in pokemon.stats.items() %}
+        <p>{{ name }}: {{ value }}</p>
+    {% endfor %}
+
+    <p>Height: {{ pokemon.height / 10 }} m</p>
+    <p>Weight: {{ pokemon.weight / 10 }} kg</p>
+
+    <h4>Moves</h4>
+    <select>
+        {% for move in pokemon.moves %}
+            <option value="{{ move }}">{{ move }}</option>
+        {% endfor %}
+    </select>
+</div>

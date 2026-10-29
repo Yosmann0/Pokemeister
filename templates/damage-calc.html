@@ -95,11 +95,6 @@
             .then(response => response.json())
     }
 
-    function getPokemonMoves(pokemonName, gameName) {
-        return fetch(`/api/pokemon_moves?name=${encodeURIComponent(pokemonName)}&game=${encodeURIComponent(gameName)}`)
-            .then(response => response.json())
-    }
-
     function fillPokemonList(pokemonList, selectElement) {
         selectElement.innerHTML = ''; // Clear existing options
 
@@ -116,16 +111,10 @@
         selectElement.selectedIndex = 0;
     }
 
-    function renderObjectProperties(obj, containerId) {
-        const container = document.getElementById(containerId);
-
-        for (let key in obj) {
-            if (obj.hasOwnProperty(key)) {
-                const p = document.createElement('p');
-                p.textContent = `${key}: ${obj[key]}`;
-                container.appendChild(p);
-            }
-        }
+    async function updatePokemonCard(pokemonName, gameName, cardElementId) {
+        const response = await fetch(`/api/pokemon_card?name=${encodeURIComponent(pokemonName)}&game=${encodeURIComponent(gameName)}`);
+        const html = await response.text();
+        document.getElementById(cardElementId).innerHTML = html;
     }
 
     function updateSelectedPokemonDisplay(selectElement, displayElementId, pokemonData) {
@@ -139,7 +128,7 @@
             const displayElement = document.getElementById(displayElementId);
             displayElement.innerHTML = ''; // Clear previous content
             displayElement.appendChild(imgElement);
-            displayElement.appendChild(document.createTextNode(selectedPokemon));
+            //displayElement.appendChild(document.createTextNode(selectedPokemon));
         });
         renderObjectProperties(pokemonData, displayElementId);
     }
@@ -156,7 +145,8 @@
             leftPokemonData.moves = pokemon.moves;
             console.log("Left Pokémon Data:", leftPokemonData);
         });
-        updateSelectedPokemonDisplay(pokemonSelectLeft, 'selected-pokemon-left',leftPokemonData);
+        updatePokemonCard(pokemonSelectLeft.value, gameSelect.value, 'selected-pokemon-left');
+        //updateSelectedPokemonDisplay(pokemonSelectLeft, 'selected-pokemon-left',leftPokemonData);
     });
 
     pokemonSelectRight.addEventListener("change", () => {
@@ -171,7 +161,8 @@
             rightPokemonData.moves = pokemon.moves;
             console.log("Right Pokémon Data:", rightPokemonData);
         });
-        updateSelectedPokemonDisplay(pokemonSelectRight, 'selected-pokemon-right',rightPokemonData);
+        // updateSelectedPokemonDisplay(pokemonSelectRight, 'selected-pokemon-right',rightPokemonData);
+        updatePokemonCard(pokemonSelectRight.value, gameSelect.value, 'selected-pokemon-right');
     });
 
     gameSelect.addEventListener("change", () => {

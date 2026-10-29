@@ -217,5 +217,15 @@ def api_pokemon_sprite():
     sprite_url = get_pokemon_sprite(pokemon_name)
     return jsonify({"sprite_url": sprite_url})
 
+@app.route('/api/pokemon_card')
+def api_pokemon_card():
+    pokemon_name = request.args.get('name', type=str)
+    game_name = request.args.get('game', type=str)
+
+    pokemon = get_less_pokemon_info_by_name(game_name, pokemon_name)
+    pokemon['sprite'] = get_pokemon_sprite(pokemon_name)
+
+    return render_template('pokemon-card.html', pokemon=pokemon)
+
 if __name__ == '__main__':
     app.run(debug=True)
