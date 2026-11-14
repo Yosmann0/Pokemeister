@@ -85,4 +85,4 @@ def api_encounters():
 
 
 if __name__ == '__main__':
-    app.run()
+    app.run()    $  $
