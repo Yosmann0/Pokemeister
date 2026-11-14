@@ -2,7 +2,7 @@ from typing import List
 from urllib.parse import urlencode
 
 from flask import Flask, render_template, request, jsonify
-from data import (
+from backend.data import (
     get_all_games,
     get_pokemon_info_by_name,
     get_locations_by_region,

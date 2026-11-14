@@ -280,6 +280,7 @@ def get_move_info(move_str: str, group_id: int):
         'priority': move_json['priority'],
         'category': move_json['damage_class']['name'],
         'type': move_json['type']['name'],
+        'target': move_json['target']['name']
     }
 
     applicable = [
