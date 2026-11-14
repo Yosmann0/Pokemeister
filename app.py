@@ -1,8 +1,17 @@
 from flask import Flask, render_template, request, jsonify
 import requests
+from werkzeug.middleware.proxy_fix import ProxyFix
+
 from api.testing.testing import get_pokemon_info_by_name, get_locations_for_generation, get_areas_for_location, get_encounter_for_area
 
 app = Flask(__name__)
+
+# Trust forwarded headers from the single NGINX proxy in front of this app.
+app.wsgi_app = ProxyFix(app.wsgi_app, x_for=1, x_proto=1)
+
+app.config["SESSION_COOKIE_SECURE"] = True
+app.config["SESSION_COOKIE_HTTPONLY"] = True
+app.config["SESSION_COOKIE_SAMESITE"] = "Lax"
 
 def get_generations():
     return [1, 2, 3, 4, 5, 6, 7, 8]
@@ -76,4 +85,4 @@ def api_encounters():
 
 
 if __name__ == '__main__':
-    app.run(debug=True)
+    app.run()
